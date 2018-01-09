@@ -1,9 +1,10 @@
-dblocsat.pf
+dblocsat2.pf
 notes.txt
 test.m
 filename.m
 MEASUREMENTS.mat
 dbmoment_logs
+tmp
 SJFex
 *.pyc
 *.swo

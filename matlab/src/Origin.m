@@ -75,7 +75,7 @@ classdef Origin
             end
 
             EQ.eqinfo = struct('etime',etime, 'elat', elat, 'elon', elon, 'edepth', edepth, 'mag', mag, 'eauth', eauth, 'eorid', eorid, 'eevid', eevid, 'estatus',estatus, 'strike1', strike1, 'strike2', strike2, 'dip1', dip1, 'dip2', dip2);
-        end
+        end %function
 
     
         function orids = getEGF(EQ, loc_margin, dep_margin, time_margin)
@@ -106,7 +106,7 @@ classdef Origin
             else
               elog_die(sprintf('No aftershock in database for orid %s', EQ.eqinfo.eorid))
             end
-        end
+        end %function
         
         function EQ = get_stations(EQ, select, reject)
             MSyearday = epoch2str(EQ.eqinfo.etime, '%Y%j');
@@ -127,8 +127,6 @@ classdef Origin
                 steps{5} = sprintf('dbsubset sta!~/%s/', reject);
             end
     
-            
-            
             site_table = dbprocess(EQ.maindb, steps);
             [stas, lats, lons, elevs] = dbgetv(site_table, 'sta', 'lat', 'lon', 'elev');
             EQ.stations = struct('sta', stas, 'lat', [], 'lon', [], 'elev', [], 'esaz', [], 'delta', [], 'distance', [], 'pdelay', [] ...
@@ -160,7 +158,7 @@ classdef Origin
                 
             end
             
-        end
+        end %function
 
         function EQ = get_arrivals(EQ, select, reject)
             steps = {};
@@ -190,8 +188,8 @@ classdef Origin
             % add pstime from EQ.stations
             for i=1:length({EQ.arrivals.sta})
                 sta = EQ.arrivals(i).sta;
-                EQ = getPStime(EQ, sta)
-
+                EQ = getPStime(EQ, sta);
+            end % for loop
 
             %for i=1:length({EQ.arrivals.sta})
             %    s = EQ.arrivals(i).sta;
@@ -203,16 +201,25 @@ classdef Origin
 
         end % arrivals function
 
+        %%% need to decide how to handle S-waves, should I assign a value or not, never gets used so logically should not assign value
+        %%% if so need rewrite in the data_setup
         function EQ=getPStime(EQ, sta)
             match = find(strcmp({EQ.arrivals.sta}, sta) == 1);
             if length(match) > 1
-                pstime = abs(EQ.arrivals(match(1)).time - EQ.arrivals(match(2)).time)
-                w = find(strcmp({EQ.arrivals.sta}, sta) == 1 && strcmp({EQ.arrivals.iphase}, 'P') == 1)
-                EQ.arrivals(w).pstime = pstime
-            else
+                pstime = abs(EQ.arrivals(match(1)).time - EQ.arrivals(match(2)).time);
+                w = find(strcmp({EQ.arrivals.sta}, sta) == 1 & strcmp({EQ.arrivals.iphase}, 'P') == 1);
+                if length(w) > 1
+                    elog_notify('More than 1 arrival for station/phase combo: Using the first')
+                    clear EQ.arrivals(w(2));
+                    w = w(1);
+                end
+                EQ.arrivals(w).pstime = pstime;
+            else length(match) == 1
                 pid = find(strcmp({EQ.stations.sta}, sta) == 1);
-                EQ.arrivals(w).pred_pstime = EQ.stations(pid).pstime
-
+                EQ.arrivals(match).pred_pstime = EQ.stations(pid).pstime;
+            end %if statement
+        end %function 
+        
     end % methods
 
 end % class

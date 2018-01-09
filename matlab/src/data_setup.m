@@ -58,7 +58,6 @@ for i=1:ns
     chan_code = strcat(chan(1:2), '.');
     egftime = EGF.arrivals(id).time;
     time = egftime - 8.0; 
-  
     % Check that EGF station and times match truth. 
     %sta
     %epoch2str(time, '%Y-%m-%d %H:%M:%S')
@@ -74,8 +73,11 @@ for i=1:ns
     chan_code = strcat(chan(1:2), '.');
     mstime = MS.arrivals(id).time;
     pstime = MS.arrivals(id).pstime;
+    if isempty(pstime)
+        pstime = 0
+    end
+ 
     time = mstime - 8.0;
-
     % Check that MS station and times match truth. 
     %sta
     %epoch2str(mstime, '%Y-%m-%d %H:%M:%S')

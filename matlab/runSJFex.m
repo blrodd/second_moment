@@ -23,6 +23,7 @@ addpath(genpath('/Users/rrodd/bin/second_moment/matlab'));
 
 % Modes to run data in (e.g. verbose, interactively, etc.)
 global mode_run
+
 mode_run = struct('verbose', verbose, 'debug', debug, 'debug_plot', debug_plot, 'interactive', interactive, 'no_figure', no_figure);
 fields = fieldnames(mode_run);
 for i=1:numel(fields)
