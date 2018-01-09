@@ -1,0 +1,27 @@
+State	&Arr{
+first_arrival 1363020968.089890
+old_evids 1755
+unassociated 0
+last_arrival 1363031425.474700
+assoc_phases PS
+time_window_stack_size 25
+time_window 1500
+stack_pointer 2
+assoc_best 0
+current_start_time  3/11/2013 (070) 19:50:09.175
+old_prefors 
+old_orids 5606
+S_residual_max 30.0
+assoc_first 0
+auto_locate 0
+evid -1
+assoc_all 0
+arrival_records 170 171 172 225 229 173 174 231 175 176 177 178 179 180 181 182 183 233 184 185 186 187 211 230 220 226 188 232 189 190 191 192 223 193 194 202 204 227 221 195 216 196 207 213 210 197 214 234 208 209 236 224 203 222 218 205 198 212 228 217 199 200 215 235 201 237 238 219
+next_start_time  3/11/2013  19:50:26.476
+time_window_stack { 3/11/2013  16:56:07.990} { 3/11/2013  16:57:00.934}
+next_default 0
+locate_default 0
+auto_associate 0
+P_residual_max 30.0
+auto_save 1
+}

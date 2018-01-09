@@ -1,0 +1,40 @@
+
+
+10/25/2017  23:53:28.000 dbloc commencing
+10/25/2017  23:53:28.000 busy: grouping from  3/11/2013  16:56:07.990 with window of 1500
+10/25/2017  23:53:30.000 arrivals: 170 arrivals found
+10/25/2017  23:53:31.000 show_residuals: no menubutton for 4883 : can't unset "Yorder": no such variable
+    while executing
+"unset Yorder" !!!
+10/25/2017  23:53:43.000 busy: saving results
+10/25/2017  23:53:43.000 Save: dbloc_verify tmp/trial 4881
+10/25/2017  23:53:43.000 Save: dbloc_verify is ok
+10/25/2017  23:53:43.000 busy: saving origin records 
+10/25/2017  23:53:43.000 Save: setprefor 1621 4881 UCSD:jtytellMl
+10/25/2017  23:53:43.000 Save: dbset SJFex/SJFexdb.origin review orid == 4881 y
+10/25/2017  23:53:43.000 Save: Saved 0 origins with 0 new events, changing 1 prefors
+10/25/2017  23:53:43.000 Save: deleting 0 origins ('')
+10/25/2017  23:53:43.000 busy: grouping from  3/11/2013  16:57:00.934 with window of 1500
+10/25/2017  23:53:43.000 arrivals: 68 arrivals found
+10/25/2017  23:53:43.000 busy: rearranging arrivals to show residuals for 5606
+10/25/2017  23:53:48.000 busy: trying to associate with catalogs ...
+10/25/2017  23:53:48.000 associate: no origins associated
+10/25/2017  23:53:57.000 busy: trying to associate with catalogs ...
+10/25/2017  23:53:57.000 associate: no origins associated
+10/25/2017  23:53:58.000 busy: trying to associate with catalogs ...
+10/25/2017  23:53:58.000 associate: no origins associated
+10/25/2017  23:53:58.000 busy: trying to associate with catalogs ...
+10/25/2017  23:53:58.000 associate: no origins associated
+10/25/2017  23:53:58.000 busy: trying to associate with catalogs ...
+10/25/2017  23:53:58.000 associate: no origins associated
+10/25/2017  23:54:04.000 busy: trying to associate with catalogs ...
+10/25/2017  23:54:04.000 associate: no origins associated
+10/25/2017  23:54:08.000 busy: saving results
+10/25/2017  23:54:08.000 Save: dbloc_verify tmp/trial 5606
+10/25/2017  23:54:08.000 Save: arrivals have been deleted: relocate or reassociate orids #5606
+10/25/2017  23:54:13.000 busy: dblocsat2: trying to locate event...
+10/25/2017  23:54:14.000 Locate: found solution
+10/25/2017  23:54:14.000 busy: rearranging arrivals to show residuals for 5613
+10/25/2017  23:54:19.000 busy: trying to associate with catalogs ...
+10/25/2017  23:54:19.000 associate: no origins associated
+10/25/2017  23:54:26.000 busy: rearranging arrivals to show residuals for 5613
