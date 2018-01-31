@@ -83,10 +83,10 @@ for index=1:EGFlen
             elog_notify(sprintf('Extract waveforms for MSorid %d / EGForid %d', msorid, orid))
         end
         tw = str2num(tw);
-        [compm dtsv npEGF npMS slat slon stasm phasem velEGF velMS timems timeegf timeps] ...
+        [compm dtsv npEGF npMS slat slon stasm phasem velEGF velMS timems timeegf duration] ...
                     = data_setup(db, orid, MS, select, reject, filter, tw);
         save filename compm depe dip1 dip2 dtsv late lone npEGF npMS slat slon ...
-                    stasm phasem strike1 strike2 velEGF velMS timems timeegf timeps 
+                    stasm phasem strike1 strike2 velEGF velMS timems timeegf duration 
     end
 
 % Parameters for the PLD measurements of ASTF duration.
@@ -103,7 +103,7 @@ for index=1:EGFlen
         end
         [t2,DONE,STF,GFsv,dhatsv,datasv,T,T1sv,epsv,epld,tpld,t0,t1,PhaseSv] ...
                         = makemeasurements(velEGF,velMS,npMS,npEGF,dtsv,stasm, ...
-                        compm, phasem, timems,timeegf, timeps, NITER, misfit_criteria, PICKt2);
+                        compm, phasem, timems,timeegf, duration, NITER, misfit_criteria, PICKt2);
         save measurements t2 DONE STF GFsv dhatsv datasv T T1sv epsv epld tpld t0 t1 PhaseSv
     end
 

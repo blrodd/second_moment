@@ -184,39 +184,47 @@ classdef Origin
             % store EQ arrival info 
             EQ.arrivals = struct('sta', stas, 'chan', chans, 'iphase', iphases ...
                    , 'phase', phases, 'time', num2cell(times), 'deltime', num2cell(deltimes) ...
-                   , 'snr', num2cell(snrs), 'esaz', num2cell(esazs), 'delta', num2cell(deltas), 'pstime', []); 
+                   , 'snr', num2cell(snrs), 'esaz', num2cell(esazs), 'delta', num2cell(deltas), 'predpstime', [], 'pstime', []); 
             % add pstime from EQ.stations
             for i=1:length({EQ.arrivals.sta})
                 sta = EQ.arrivals(i).sta;
                 EQ = getPStime(EQ, sta);
             end % for loop
 
-            %for i=1:length({EQ.arrivals.sta})
-            %    s = EQ.arrivals(i).sta;
-            %   
-            %    pid = find(strcmp({EQ.stations.sta}, s) == 1);
-            %    EQ.arrivals(i).pstime = EQ.stations(pid).pstime;
-            %end
-
-
         end % arrivals function
 
-        %%% need to decide how to handle S-waves, should I assign a value or not, never gets used so logically should not assign value
-        %%% if so need rewrite in the data_setup
+        function EQ=predPStime(EQ, sta)
+            ma = find(strcmp({EQ.arrivals.sta}, sta) == 1 & strcmp({EQ.arrivals.iphase}, 'P') == 1);
+            ms = find(strcmp({EQ.stations.sta}, sta) == 1);
+            if (ma & ms)
+                EQ.arrivals(ma).predpstime = EQ.stations(ms).pstime;
+            end
+        end % function
+    
         function EQ=getPStime(EQ, sta)
             match = find(strcmp({EQ.arrivals.sta}, sta) == 1);
-            if length(match) > 1
-                pstime = abs(EQ.arrivals(match(1)).time - EQ.arrivals(match(2)).time);
-                w = find(strcmp({EQ.arrivals.sta}, sta) == 1 & strcmp({EQ.arrivals.iphase}, 'P') == 1);
-                if length(w) > 1
-                    elog_notify('More than 1 arrival for station/phase combo: Using the first')
-                    clear EQ.arrivals(w(2));
-                    w = w(1);
+            match_to_sta = find(strcmp({EQ.stations.sta}, sta) == 1);
+            if match
+                mp = find(strcmp({EQ.arrivals.sta}, sta) == 1 & strcmp({EQ.arrivals.iphase}, 'P') == 1);
+                ms = find(strcmp({EQ.arrivals.sta}, sta) == 1 & strcmp({EQ.arrivals.iphase}, 'S') == 1);
+                
+                if length(mp) > 1
+                    elog_notify(sprintf('More than 1 arrival for station %s phase P. Using the first arrival', sta))
+                    clear EQ.arrivals(mp(2));
+                    mp = mp(1);
                 end
-                EQ.arrivals(w).pstime = pstime;
-            else length(match) == 1
-                pid = find(strcmp({EQ.stations.sta}, sta) == 1);
-                EQ.arrivals(match).pred_pstime = EQ.stations(pid).pstime;
+                
+                if length(ms) > 1
+                    elog_notify(sprintf('More than 1 arrival for station %s phase S. Using the first arrival', sta))
+                    clear EQ.arrivals(ms(2));
+                    ms = ms(1);
+                end
+
+                if (mp & ms)
+                    pstime = abs(EQ.arrivals(ms).time - EQ.arrivals(mp).time);
+                    EQ.arrivals(mp).pstime = pstime;
+                end
+                        
             end %if statement
         end %function 
         

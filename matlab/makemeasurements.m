@@ -1,4 +1,4 @@
-function [t2,DONE,STF,GFsv,dhatsv,datasv,Tsv,T1sv,epsv,epldsv,tpldsv,t0,t1,PhaseSv]=makemeasurements(velEGFa,velMSa,npMS,npEGF,dtsva,stasm,compm,phasem, timems,timeegf, timeps, niter, misfit_criteria, pickt2);
+function [t2,DONE,STF,GFsv,dhatsv,datasv,Tsv,T1sv,epsv,epldsv,tpldsv,t0,t1,PhaseSv]=makemeasurements(velEGFa,velMSa,npMS,npEGF,dtsva,stasm,compm,phasem, timems,timeegf, duration, niter, misfit_criteria, pickt2);
 ns=size(velEGFa,1);
 
 global mode_run
@@ -71,8 +71,8 @@ if ~mode_run.interactive
             % Set MS inversion window.
             % If P phase, set window to end 3 seconds after arrival or to predicted P-S time if less than 3 seconds.
             % Prevents S-wave contamination. 
-            if strcmp(phasem(i),'P') == 1
-                len = floor(timeps(i));
+            if strcmp(phasem(i),'P') == 1 & duration
+                len = floor(duration(i));
                  if len > 3
                    len = 3;
                  end

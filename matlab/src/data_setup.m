@@ -1,4 +1,4 @@
-function [compm dtsv npEGF npMS slat slon stasm phasem velEGF velMS timems timeegf timeps] ...
+function [compm dtsv npEGF npMS slat slon stasm phasem velEGF velMS timems timeegf duration] ...
         = data_setup(db, orid, MS, select, reject, filter, tw);
 % DATASETUP For each possible egf, set up the waveforms, origin, stations, arrivals.
 % Inputs:
@@ -21,7 +21,7 @@ function [compm dtsv npEGF npMS slat slon stasm phasem velEGF velMS timems timee
 %   velMS:        array of velocity seismograms for Mainshock
 %   timems:       array of mainshock arrival times
 %   timeegf:      array of egf arrival times
-%   timeps:       array of predicted P-S times
+%   duration:     array of predicted P-S times
 
 % Initiate EGF Origin instance to retrieve egf origin info.
 global mode_run
@@ -72,11 +72,14 @@ for i=1:ns
     chan = MS.arrivals(id).chan;
     chan_code = strcat(chan(1:2), '.');
     mstime = MS.arrivals(id).time;
-    pstime = MS.arrivals(id).pstime;
-    if isempty(pstime)
-        pstime = 0
-    end
- 
+    if MS.arrivals(id).pstime
+        pstime = MS.arrivals(id).pstime;
+    elseif (~MS.arrivals(id).pstime & phase == 'P')
+        m = find(strcmp({MS.stations.sta}, sta) == 1)
+        pstime = MS.stations(m).pstime
+    else
+        pstime = 0;
+
     time = mstime - 8.0;
     % Check that MS station and times match truth. 
     %sta
@@ -104,7 +107,7 @@ for i=1:ns
             compm{s} = chan;
             timems(s) = mstime;
             timeegf(s) = egftime;
-            timeps(s) = pstime;
+            duration(s) = pstime;
 
             dtsv(s) = 1./MS_wf.samprate;
 
