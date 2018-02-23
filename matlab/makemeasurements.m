@@ -71,6 +71,7 @@ if ~mode_run.interactive
             % Set MS inversion window.
             % If P phase, set window to end 3 seconds after arrival or to predicted P-S time if less than 3 seconds.
             % Prevents S-wave contamination. 
+        
             if strcmp(phasem(i),'P') == 1 & duration
                 len = floor(duration(i));
                  if len > 3
@@ -84,7 +85,24 @@ if ~mode_run.interactive
             samps_after = len./dtsv(i);
             tt2b = t + samps_after;
             tt1b = t - samps_before;
+            
+            % add in auto phase picker, test to see if works well
+            if strcmp(phasem(i), 'P')
+                Tn = 0.01;
+                xi = 0.6;
+                nbins = 15;
+                o = 'to_peak';
+                type = 'na';
+                pflag = 'Y';
+                [loc, snr_db] = PphasePicker(velMS(tt1b:tt2b), dtsv(i), type, pflag, Tn, xi, nbins, o)
     
+                % if new arrival was selected update waveform window 
+                if loc >= 0
+                    tt2b = tt1b + loc/dtsv(i) + samps_after;
+                    tt1b = tt1b + loc/dtsv(i) - samps_before;
+                end
+            end
+
             if mode_run.debug_plot
                 figure
                 plot(velMS);
@@ -107,6 +125,7 @@ if ~mode_run.interactive
             end
             clf
             
+
             if mode_run.debug_plot
                 figure
                 plot(data);
@@ -145,6 +164,23 @@ if ~mode_run.interactive
             % tt2b = arrival time + MS inversion window length - (arrival - 3) - 1
             tt1b = t;
             tt2b=tt1b+np-1;
+           
+            if strcmp(phasem(i), 'P')
+                Tn = 0.01;
+                xi = 0.6;
+                nbins = 15;
+                o = 'to_peak';
+                type = 'na';
+                pflag = 'Y';
+                [loc, snr_db] = PphasePicker(velEGF((tt1b-samps_before):(tt2b)), dtsv(i), type, pflag, Tn, xi, nbins, o)
+    
+                % if new arrival was selected update waveform window 
+                if loc >= 0
+                    tt1b = tt1b + loc/dtsv(i) - samps_before;
+                    tt2b = tt1b + np - 1;
+                end
+            end
+
             
             if mode_run.debug_plot
                 figure
