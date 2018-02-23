@@ -1,0 +1,35 @@
+# matlab parameters
+loaddatafile	0	# load seismograms from a .mat file
+domeasurement	1	# run ASTF measurement
+pickt2		0	# 
+doinversion	1	# run convext inversion
+dojackknife	0	# run jackknifing
+azband		20	# size (degrees) of azimuths bins to delete for jackknife error calcs
+dobootstrap	0	# run bootstrapping
+nb		1000	# number of bootstrap iterations to run
+bconf		0.95	# confidence level to determine bootstrap bounds
+niter		100	# number of iterations in the PLD deconvultions; > 50 usually needed
+	
+# egf selection criteria
+location_margin	0.05
+depth_margin	10
+time_margin	864000
+
+# waveform altering parameters
+filter	BW 1 4 5 4
+time_window	200
+
+# ASTF selection criteria
+misfit	0.60
+
+# file location
+image_dir	./second_moment_images
+temp_dir	./.second_moment
+
+# How do we run the main Matlab framework...
+xvfb_path    /usr/X11/bin/Xvfb
+matlab_path  /Applications/MATLAB_R2017b.app/bin/matlab
+matlab_flags -nodesktop -nosplash
+matlab_nofig -noFigureWindows
+
+
