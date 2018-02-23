@@ -45,7 +45,7 @@ msinds = cell2mat(match(cellfun(@(x) ~isempty(x), match)));
 
 % Initiate variables to be returned.
 stasm = {};  phasem = {}; compm = {};
-timems = []; timeegf = []; timeps = [];
+timems = []; timeegf = []; duration = [];
 
 % For each station with ms & egf arrivals, do:
 s = 0;

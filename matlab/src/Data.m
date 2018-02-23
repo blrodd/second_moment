@@ -9,7 +9,6 @@ classdef Data
         tr
         chan
         data
-        dbview
     end %properties
 
     methods
@@ -49,12 +48,9 @@ classdef Data
             % if 3 records 
             if dbnrecs(dbview) == 3
                 % get wfdisc info for later
-                [samprate, ncalib,segtype, time] = dbgetv(dbview, 'wfdisc.samprate', ...
-                                'instrument.ncalib', 'instrument.rsptype', 'wfdisc.time');
-                %epoch2str(time(1), '%Y-%m-%d %H:%M:%S')
-                %epoch2str(starttime, '%Y-%m-%d %H:%M:%S')
+                [samprate, ncalib,segtype] = dbgetv(dbview, 'wfdisc.samprate', ...
+                                'instrument.ncalib', 'instrument.rsptype');
                 
-                WF.time = starttime - time(1);
                 % only use one value for each, should be same for all 3 records
                 WF.samprate = samprate(1); WF.ncalib = ncalib(1); WF.segtype = segtype(1); 
 
@@ -89,87 +85,59 @@ classdef Data
 
                 % apply calibration
                 % demean traces
-                %trapply_calib(tr);
-%                trfilter(tr, 'DEMEAN');
-%
-%                % apply integration
-%                if strcmp(segtype, 'A')
-%                    trfilter(tr, 'INT');
-%                    segtype = 'V';
-%
-%                elseif strcmp(segtype, 'D')
-%                    trfilter(tr, 'DIF');
-%                    segtype = 'V';
-%
-%                elseif strcmp(segtype, 'V')
-%                    segtype = 'V';
-%
-%                else
-%                    elog_notify(sprintf('Unknown data type for %s:%s', sta, chan_code))
-%                    return
-%                end
-%                
-%                %  rotation -- discuss with Juan first???
-%                % filter
-%                try
-%                    trfilter(tr, filter);
-%                catch
-%                    elog_notify(sprintf('Problems with filter %s for %s:%s', filter, sta, chan_code))
-%                    return
-%                end
-%
-%
+                trapply_calib(tr);
+                trfilter(tr, 'DEMEAN');
+
+                % apply integration
+                if strcmp(segtype, 'A')
+                    trfilter(tr, 'INT');
+                    segtype = 'V';
+
+                elseif strcmp(segtype, 'D')
+                    trfilter(tr, 'DIF');
+                    segtype = 'V';
+
+                elseif strcmp(segtype, 'V')
+                    segtype = 'V';
+
+                else
+                    elog_notify(sprintf('Unknown data type for %s:%s', sta, chan_code))
+                    return
+                end
+                
+                %  rotation -- discuss with Juan first???
+                % filter
+                try
+                    trfilter(tr, filter);
+                catch
+                    elog_notify(sprintf('Problems with filter %s for %s:%s', filter, sta, chan_code))
+                    return
+                end
+
+
                 WF.tr = tr; 
-                WF.dbview = dbview;
             end
         end % function
 
         function WF = grab_data(WF, chan, type)
             % subset tr for specific channel
-            if strcmp(WF.segtype, 'A')
-                dointe = 1;
-            else
-                dointe = 0;
-            end
-            
-            dbview = dbsubset(WF.dbview, sprintf('chan =~/%s/', chan));
-            [dir, file] = dbgetv(dbview, 'dir', 'dfile');
-            filename = strcat(dir, '/', file);
-            X=rdmseed(filename);
-            tms = cat(1,X.t);
-            dms = cat(1,X.d);
-            dtsv=1./X(1).SampleRate;
-            sampr=X(1).SampleRate;
+            tr = dbsubset(WF.tr, sprintf('chan =~/%s/', chan));
 
-            [B A] = butter(4, 2*[0.25 15]/sampr);
-%            if (strcmp(chan, 'HNN') | strcmp(chan, 'HNZ') | strcmp(chan, 'HNE'))
-%                [B A] = butter(4,2*[0.25 15]/sampr);
-%            else 
-%                [B A] = butter(4,2*[1 5]/sampr);
-%            end
-            dms=dms-mean(dms);
+            if dbnrecs(tr) == 1
+                tr.record = 0;
+                data = trextract_data(tr);
 
-            dms=detrend(dms);
-            
-            if strcmp(type, 'ms')
-                tp=taper(length(dms),.01);
-            else
-                tp=taper(length(dms),.05);
-            end
-            
-            dms=dms.*tp;
-
-            dms=filtfilt(B,A,dms);
-
-            if(dointe)
-              dms =inte(dms-mean(dms),dtsv);
-            else
-              dms =dms-mean(dms);
-            end
-
-            start = round(WF.time.*sampr);
-             
-            WF.data = dms(start:length(dms));
+                data = detrend(data);
+                
+                if strcmp(type, 'ms')
+                    tp=taper(length(data),.01);
+                else
+                    tp=taper(length(data),.05);
+                end
+                
+                data=data.*tp;
+%                data = data.*tp;
+                WF.data = data;
 
                 % for longer mseed files, the tw will be changed
                 % time: arrival - 8 seconds
@@ -177,13 +145,13 @@ classdef Data
                 % there will be 2 extra time windows so filter and taper do not affect true window 
                 % data = data[tw:2*tw]
                 
-            %elseif dbnrecs(tr) > 1
-            %    elog_notify(sprintf('More than 1 trace for %s:%s', WF.sta, chan))
-            %    return
-            %elseif dbnrecs(tr) == 0
-            %    elog_notify(sprintf('No traces for %s:%s', WF.sta, chan))
-            %    return
-            %end
+            elseif dbnrecs(tr) > 1
+                elog_notify(sprintf('More than 1 trace for %s:%s', WF.sta, chan))
+                return
+            elseif dbnrecs(tr) == 0
+                elog_notify(sprintf('No traces for %s:%s', WF.sta, chan))
+                return
+            end
         end % function 
             
     end % methods

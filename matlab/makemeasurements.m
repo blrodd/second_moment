@@ -346,7 +346,35 @@ else
       figure
       plot(velMS)
       title(stasm{i})
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      % extract info from automated waveforms to test code %
  
+      % Get samples since waveform start of arrival (8 seconds after start). 
+      t = 8./dtsv(i);
+
+      % Set MS inversion window.
+      % If P phase, set window to end 3 seconds after arrival or to predicted P-S time if less than 3 seconds.
+      % Prevents S-wave contamination. 
+      if strcmp(phasem(i),'P') == 1 & duration
+          len = floor(duration(i));
+           if len > 3
+             len = 3;
+           end
+      else
+          len = 3;
+      end
+
+      samps_before = 50;
+      samps_after = len./dtsv(i);
+      win2 = t + samps_after;
+      win1 = t - samps_before;
+
+      vline(win2, 'green')
+      vline(win1, 'green')
+      vline(t, 'red')
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      
       % select window to zoom
       % select at least 50 samples before desired arrivals
       % select ~ 5 seconds after arrival or when amplitude returned to near-zero, do not include later arrivals
@@ -355,11 +383,14 @@ else
       tt1b=round(x);
       [x y]=ginput(1);
       tt2b=round(x);
- 
+
       % plot MS data from start and end zoom selection
       plot(velMS(tt1b:tt2b))
       title([stasm{i},' ',compm{i}])
- 
+
+      vline(win1-tt1b, 'green')
+      vline(win2-tt1b, 'green')
+      vline(t-tt1b, 'red') 
       % select range to invert
       % 20-50 samples before first arrival, when ~ 0 amplitude
       % 3-5 seconds after arrival or near zero amplitude
@@ -379,7 +410,7 @@ else
  
       % plot inversion range data
       plot(data)
- 
+      vline(t-tt1b, 'red') 
       % pick arrival time
       disp('Pick P or S-wave arrival time');
       [x y] = ginput(1);
@@ -403,7 +434,7 @@ else
       figure
       plot(velEGF)
       title(strcat('EGF: ', stasm{i}, '-', compm{i}))
- 
+      vline(t, 'red') 
       % pick range to zoom, window tightly around arrival
       disp('Pick range to Zoom')
       [x y] = ginput(1);
@@ -414,7 +445,7 @@ else
       % plot zoom selection
       plot(velEGF(tt1b:tt2b))
       title([stasm{i},' ',compm{i}])
- 
+      vline(t-tt1b, 'red')
       % pick arrival time
       disp('Pick P or S wave arrival time')
       [x y] = ginput(1);

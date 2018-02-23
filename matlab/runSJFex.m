@@ -16,7 +16,7 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Initiate Antelope-matlab interface.
-run('/opt/antelope/5.7/setup.m')
+run('/opt/antelope/5.8pre/setup.m')
 
 % Add matlab files to MATLABPATH.
 addpath(genpath('/Users/rrodd/bin/second_moment/matlab'));
