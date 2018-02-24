@@ -72,7 +72,7 @@ if ~mode_run.interactive
             % If P phase, set window to end 3 seconds after arrival or to predicted P-S time if less than 3 seconds.
             % Prevents S-wave contamination. 
         
-            if strcmp(phasem(i),'P') == 1 & duration
+            if strcmp(phasem(i),'P') == 1 & duration(i)
                 len = floor(duration(i));
                  if len > 3
                    len = 3;
@@ -80,7 +80,8 @@ if ~mode_run.interactive
             else
                 len = 3;
             end
- 
+
+            len 
             samps_before = 50;
             samps_after = len./dtsv(i);
             tt2b = t + samps_after;

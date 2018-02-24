@@ -72,13 +72,15 @@ for i=1:ns
     chan = MS.arrivals(id).chan;
     chan_code = strcat(chan(1:2), '.');
     mstime = MS.arrivals(id).time;
+
     if MS.arrivals(id).pstime
         pstime = MS.arrivals(id).pstime;
-    elseif (~MS.arrivals(id).pstime & phase == 'P')
-        m = find(strcmp({MS.stations.sta}, sta) == 1)
-        pstime = MS.stations(m).pstime
+    elseif phase=='P'
+        m = find(strcmp({MS.stations.sta}, sta) == 1);
+        pstime = MS.stations(m).pstime;
     else
         pstime = 0;
+    end
 
     time = mstime - 8.0;
     % Check that MS station and times match truth. 
