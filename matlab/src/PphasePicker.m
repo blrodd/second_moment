@@ -163,10 +163,10 @@ end
 
 switch o
     case {'to_peak'}
-        ind_peak = find(abs(x_d) == max(abs(x_d)));
-        xnew = x_d(1:ind_peak);
+        ind_peak = find(abs(x) == max(abs(x)));
+        xnew = x(1:ind_peak);
     otherwise
-        xnew = x_d;
+        xnew = x;
 end
 
 % Construct a fixed-base viscously damped SDF oscillator

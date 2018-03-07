@@ -81,22 +81,21 @@ if ~mode_run.interactive
                 len = 3;
             end
 
-            len 
+            %len = 3; 
             samps_before = 50;
             samps_after = len./dtsv(i);
             tt2b = t + samps_after;
             tt1b = t - samps_before;
-            
+            t
             % add in auto phase picker, test to see if works well
             if strcmp(phasem(i), 'P')
                 Tn = 0.01;
-                xi = 0.6;
-                nbins = 15;
+                xi = 0.001;
+                nbins = 10;
                 o = 'to_peak';
                 type = 'na';
                 pflag = 'Y';
                 [loc, snr_db] = PphasePicker(velMS(tt1b:tt2b), dtsv(i), type, pflag, Tn, xi, nbins, o)
-    
                 % if new arrival was selected update waveform window 
                 if loc >= 0
                     tt2b = tt1b + loc/dtsv(i) + samps_after;
@@ -168,8 +167,8 @@ if ~mode_run.interactive
            
             if strcmp(phasem(i), 'P')
                 Tn = 0.01;
-                xi = 0.6;
-                nbins = 15;
+                xi = 0.4;
+                nbins = 25;
                 o = 'to_peak';
                 type = 'na';
                 pflag = 'Y';
