@@ -1,4 +1,4 @@
-function [t2,DONE,STF,GFsv,dhatsv,datasv,Tsv,T1sv,epsv,epldsv,tpldsv,t0,t1,PhaseSv]=makemeasurements(velEGFa,velMSa,npMS,npEGF,dtsva,stasm,compm,phasem, timems,timeegf, duration, niter, misfit_criteria, pickt2);
+function [t2,DONE,STF,GFsv,dhatsv,datasv,Tsv,T1sv,epsv,epldsv,tpldsv,t0,t1,PhaseSv]=makemeasurements(velEGFa,velMSa,velEGFa_rot, velMSa_rot, npMS,npEGF,dtsva,stasm,compm,phasem, timems,timeegf, duration, niter, misfit_criteria, pickt2);
 ns=size(velEGFa,1);
 
 global mode_run
@@ -34,9 +34,10 @@ if ~mode_run.interactive
         if(npEGF(i)>=100 && npMS(i)>=100)
             % grab MS data
             velMS=velMSa(i,1:npMS(i)); velMS=velMS';
-  
+            velMS_rot = velMSa_rot(i,1:npMS(i)); velMS_rot=velMS_rot'; 
             % grab EGF data
             velEGF=velEGFa(i,1:npEGF(i)); velEGF=velEGF';
+            velEGF_rot = velEGFa_rot(i,1:npEGF(i)); velEGF_rot=velEGF_rot';
  
             % time from start of waveform
             tms=[1:npMS(i)]*dtsva(i);
@@ -88,14 +89,14 @@ if ~mode_run.interactive
             tt1b = t - samps_before;
             t
             % add in auto phase picker, test to see if works well
-            if strcmp(phasem(i), 'P')
+            if strcmp(phasem(i), 'S')
                 Tn = 0.01;
                 xi = 0.001;
                 nbins = 10;
                 o = 'to_peak';
                 type = 'na';
                 pflag = 'Y';
-                [loc, snr_db] = PphasePicker(velMS(tt1b:tt2b), dtsv(i), type, pflag, Tn, xi, nbins, o)
+                [loc, snr_db] = PphasePicker(velMS_rot(tt1b:tt2b), dtsv(i), type, pflag, Tn, xi, nbins, o)
                 % if new arrival was selected update waveform window 
                 if loc >= 0
                     tt2b = tt1b + loc/dtsv(i) + samps_after;
@@ -165,7 +166,7 @@ if ~mode_run.interactive
             tt1b = t;
             tt2b=tt1b+np-1;
            
-            if strcmp(phasem(i), 'P')
+            if strcmp(phasem(i), 'S')
                 Tn = 0.01;
                 xi = 0.4;
                 nbins = 25;

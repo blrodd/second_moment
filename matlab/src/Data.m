@@ -9,10 +9,11 @@ classdef Data
         tr
         chan
         data
+        rot_data
     end %properties
 
     methods
-        function WF = Data(db, sta, chan_code, time, tw, filter)
+        function WF = Data(db, sta, chan_code, time, tw, filter, esaz)
             % set starttime and endtime
             WF.time = time;
             starttime = WF.time;
@@ -106,6 +107,12 @@ classdef Data
                 end
                 
                 %  rotation -- discuss with Juan first???
+                try
+                    trrotate(tr, esaz, 0, {'T','R','Z'});
+                catch
+                    elog_notify(sprintf('Problems with rotating %s:%s', sta, chan_code))
+                end
+ 
                 % filter
                 try
                     trfilter(tr, filter);
@@ -114,15 +121,22 @@ classdef Data
                     return
                 end
 
-
                 WF.tr = tr; 
             end
         end % function
 
         function WF = grab_data(WF, chan, type)
             % subset tr for specific channel
-            tr = dbsubset(WF.tr, sprintf('chan =~/%s/', chan));
+            %% add in rotated data to see if picker works on S arrivals
 
+
+            tr = dbsubset(WF.tr, sprintf('chan =~/%s/', chan));
+            if strcmp(chan(3), 'Z')
+                tr_rot = dbsubset(WF.tr, sprintf('chan=~/%s/', 'Z'));
+            else
+                tr_rot = dbsubset(WF.tr, sprintf('chan=~/%s/', 'T'));
+            end
+ 
             if dbnrecs(tr) == 1
                 tr.record = 0;
                 data = trextract_data(tr);
@@ -138,6 +152,30 @@ classdef Data
                 data=data.*tp;
 %                data = data.*tp;
                 WF.data = data;
+            
+            elseif dbnrecs(tr) > 1
+                elog_notify(sprintf('More than 1 trace for %s:%s', WF.sta, chan))
+                return
+            elseif dbnrecs(tr) == 0
+                elog_notify(sprintf('No traces for %s:%s', WF.sta, chan))
+                return
+            end
+ 
+            if dbnrecs(tr_rot) == 1
+                tr_rot.record = 0;
+                data = trextract_data(tr_rot);
+
+                data = detrend(data);
+                
+                if strcmp(type, 'ms')
+                    tp=taper(length(data),.01);
+                else
+                    tp=taper(length(data),.05);
+                end
+                
+                data=data.*tp;
+%                data = data.*tp;
+                WF.rot_data = data;
 
                 % for longer mseed files, the tw will be changed
                 % time: arrival - 8 seconds
@@ -145,10 +183,10 @@ classdef Data
                 % there will be 2 extra time windows so filter and taper do not affect true window 
                 % data = data[tw:2*tw]
                 
-            elseif dbnrecs(tr) > 1
+            elseif dbnrecs(tr_rot) > 1
                 elog_notify(sprintf('More than 1 trace for %s:%s', WF.sta, chan))
                 return
-            elseif dbnrecs(tr) == 0
+            elseif dbnrecs(tr_rot) == 0
                 elog_notify(sprintf('No traces for %s:%s', WF.sta, chan))
                 return
             end

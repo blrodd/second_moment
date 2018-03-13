@@ -1,4 +1,4 @@
-function [compm dtsv npEGF npMS slat slon stasm phasem velEGF velMS timems timeegf duration] ...
+function [compm dtsv npEGF npMS slat slon stasm phasem velEGF velMS velEGF_rot velMS_rot timems timeegf duration] ...
         = data_setup(db, orid, MS, select, reject, filter, tw);
 % DATASETUP For each possible egf, set up the waveforms, origin, stations, arrivals.
 % Inputs:
@@ -54,6 +54,7 @@ for i=1:ns
     % Set up variable inputs for EGF Data instance.
     id = egfinds(i);
     sta = EGF.arrivals(id).sta;
+    esaz = EGF.arrivals(id).esaz;
     chan = EGF.arrivals(id).chan;
     chan_code = strcat(chan(1:2), '.');
     egftime = EGF.arrivals(id).time;
@@ -63,11 +64,12 @@ for i=1:ns
     %epoch2str(time, '%Y-%m-%d %H:%M:%S')
    
     % Get trace table and apply_calib, integrate, filter, and rotate traces.
-    EGF_wf = Data(db, sta, chan_code, time, tw, filter);
+    EGF_wf = Data(db, sta, chan_code, time, tw, filter, esaz);
    
     % Set up variable inputs for MS Data instance.
     id = msinds(i);
     sta = MS.arrivals(id).sta;
+    esaz = MS.arrivals(id).esaz;
     phase = MS.arrivals(id).iphase;
     chan = MS.arrivals(id).chan;
     chan_code = strcat(chan(1:2), '.');
@@ -88,8 +90,7 @@ for i=1:ns
     %epoch2str(mstime, '%Y-%m-%d %H:%M:%S')
     
     % Get trace table and apply_calib, integrate, filter, and rotate traces
-    MS_wf = Data(db, sta, chan_code, time, tw, filter);
-    
+    MS_wf = Data(db, sta, chan_code, time, tw, filter, esaz);
     % Extract waveform data from tr.
     if ~isempty(MS_wf.tr) & ~isempty(EGF_wf.tr)
         % Get data for channel and store.
@@ -116,9 +117,11 @@ for i=1:ns
             % Store waveform data.
             npMS(s) = length(MS_wf.data);
             velMS(s,1:npMS(s)) = MS_wf.data;
-    
+            velMS_rot(s,1:npMS(s)) = MS_wf.rot_data;
+ 
             npEGF(s)=length(EGF_wf.data);
-            velEGF(s,1:npEGF(s))=EGF_wf.data;
+            velEGF(s,1:npEGF(s)) = EGF_wf.data;
+            velEGF_rot(s, 1:npEGF(s)) = EGF_wf.rot_data;
         end % if
     end % if
 end % for loop
