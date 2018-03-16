@@ -15,6 +15,7 @@ classdef Data
     methods
         function WF = Data(db, sta, chan_code, time, tw, filter, esaz)
             % set starttime and endtime
+            global mode_run
             WF.time = time;
             starttime = WF.time;
             endtime = starttime + tw;
@@ -119,6 +120,10 @@ classdef Data
                 catch
                     elog_notify(sprintf('Problems with filter %s for %s:%s', filter, sta, chan_code))
                     return
+                end
+
+                if mode_run.debug_plot
+                    plot_waveforms(tr, esaz)
                 end
 
                 WF.tr = tr; 
