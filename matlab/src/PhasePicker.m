@@ -1,4 +1,4 @@
-function [loc, snr_db] = PphasePicker(x, dt, type, pflag, Tn, xi, nbins, o)
+function [loc, snr_db] = PhasePicker(x, dt, type, pflag, Tn, xi, nbins, o)
 %   AN AUTOMATIC P-PHASE ARRIVAL TIME PICKER
 %
 %   Computes P-phase arrival time in windowed digital single-component

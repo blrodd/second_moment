@@ -109,9 +109,16 @@ classdef Data
                 
                 %  rotation -- discuss with Juan first???
                 try
+                    warning('off')
                     trrotate(tr, esaz, 0, {'T','R','Z'});
+                    [warnMsg, warnId] = lastwarn;
+                    if ~isempty(warnMsg)
+                        elog_notify(sprintf('Problems with rotating %s:%s', sta, chan_code))
+                        return
+                    end
                 catch
                     elog_notify(sprintf('Problems with rotating %s:%s', sta, chan_code))
+                    return
                 end
  
                 % filter
@@ -122,9 +129,10 @@ classdef Data
                     return
                 end
 
-                if mode_run.debug_plot
-                    plot_waveforms(tr, esaz)
-                end
+                % test rotation code
+                %if mode_run.debug_plot
+                %    plot_waveforms(tr, esaz)
+                %end
 
                 WF.tr = tr; 
             end

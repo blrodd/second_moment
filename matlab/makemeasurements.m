@@ -87,22 +87,51 @@ if ~mode_run.interactive
             samps_after = len./dtsv(i);
             tt2b = t + samps_after;
             tt1b = t - samps_before;
-            t
-            % add in auto phase picker, test to see if works well
-            if strcmp(phasem(i), 'S')
-                Tn = 0.01;
-                xi = 0.001;
-                nbins = 10;
-                o = 'to_peak';
-                type = 'na';
-                pflag = 'Y';
-                [loc, snr_db] = PphasePicker(velMS_rot(tt1b:tt2b), dtsv(i), type, pflag, Tn, xi, nbins, o)
-                % if new arrival was selected update waveform window 
-                if loc >= 0
-                    tt2b = tt1b + loc/dtsv(i) + samps_after;
-                    tt1b = tt1b + loc/dtsv(i) - samps_before;
-                end
+           
+
+           %%% PHASE PICKER TO IMPROVE ARRIVAL TIMES %%%
+    
+           % testing parameters
+           % if strcmp(phasem(i), 'P')
+           %     xis = [0.001 0.1 0.3 0.5 0.7 0.9 0.999];
+           %     bins = [10 25 50 100]
+           %     for x = xis
+           %         Tn = 0.01;
+           %         xi = x;
+           %         
+           %         for b = bins
+           %             nbins = b;
+           %             o = 'to_peak';
+           %             type = 'na';
+           %             pflag = 'Y';
+           %             try
+           %                 [loc, snr_db] = PhasePicker(velMS_rot((tt1b):tt2b), dtsv(i), type, pflag, Tn, xi, nbins, o);
+           %             catch
+           %                 'Cannot run picker'
+           %             end
+           %             if loc >= 0
+           %                 [xi, nbins]
+           %                 k = waitforbuttonpress
+           %             end
+           %         end
+           %         % if new arrival was selected update waveform window 
+           %     end 
+           % end
+            
+            %
+            if strcmp(phasem(i), 'P')
+                xi = 0.5;
+                nbins = [25 50 100 2/dtsv(i)];
+                s = 0;
             end
+            
+            if strcmp(phasem(i), 'S')
+                xi = 0.99;
+                nbins = [10 15 20 50];
+                s = 30;
+            end
+            [tt1b tt2b] = automated_arrival(xi, nbins, s, phasem(i), 'MS', velMS_rot, tt1b, tt2b, samps_before, samps_after, dtsv(i));
+            t = tt1b + samps_before; 
 
             if mode_run.debug_plot
                 figure
@@ -166,22 +195,45 @@ if ~mode_run.interactive
             tt1b = t;
             tt2b=tt1b+np-1;
            
-            if strcmp(phasem(i), 'S')
-                Tn = 0.01;
-                xi = 0.4;
-                nbins = 25;
-                o = 'to_peak';
-                type = 'na';
-                pflag = 'Y';
-                [loc, snr_db] = PphasePicker(velEGF((tt1b-samps_before):(tt2b)), dtsv(i), type, pflag, Tn, xi, nbins, o)
-    
-                % if new arrival was selected update waveform window 
-                if loc >= 0
-                    tt1b = tt1b + loc/dtsv(i) - samps_before;
-                    tt2b = tt1b + np - 1;
-                end
+           % testing best parameters
+           % if strcmp(phasem(i), 'P')
+           %     xis = [0.001 0.1 0.3 0.5 0.7 0.9 0.999];
+           %     bins = [10 25 50 100]
+           %     for x = xis
+           %         Tn = 0.01;
+           %         xi = x;
+           %         
+           %         for b = bins
+           %             nbins = b;
+           %             o = 'to_peak';
+           %             type = 'na';
+           %             pflag = 'Y';
+           %             try
+           %                 [loc, snr_db] = PhasePicker(velEGF_rot((tt1b-samps_before):tt2b), dtsv(i), type, pflag, Tn, xi, nbins, o);
+           %             catch
+           %                 'Cannot run picker'
+           %             end
+           %             if loc >= 0
+           %                 [xi, nbins]
+           %                 k = waitforbuttonpress
+           %             end
+           %         end
+           %         % if new arrival was selected update waveform window 
+           %     end
+           % end 
+            
+            if strcmp(phasem(i), 'P')
+                xi = 0.5;
+                nbins = [25 50 100 2/dtsv(i)];
+                s = 0;
             end
-
+            
+            if strcmp(phasem(i), 'S')
+                xi = 0.99;
+                nbins = [10 15 20 50];
+                s = 30;
+            end
+            [tt1b tt2b] = automated_arrival(xi, nbins, s,  phasem(i), 'EGF', velMS_rot, tt1b, tt2b, samps_before, samps_after, dtsv(i), np);
             
             if mode_run.debug_plot
                 figure
