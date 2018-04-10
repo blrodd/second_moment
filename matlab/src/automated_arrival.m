@@ -16,7 +16,7 @@ function [tt1b tt2b] = automated_arrival(xi, nbins, samples, phase, dtype, data,
 %   tt2b:    updated window end time
 
     type = 'na';
-    pflag = 'Y';
+    pflag = 'N';
     Tn = 0.01;
     o = 'to_peak';
 
@@ -30,10 +30,14 @@ function [tt1b tt2b] = automated_arrival(xi, nbins, samples, phase, dtype, data,
         loc = locs(ind);
         
         if loc >= 0
+            elog_notify('Detected arrival: will update arrival time')
             ts = tt1b + loc/dt - samples;
             tt2b = ts + sa;
             tt1b = ts - sb;
-       end
+        else
+            elog_notify('Unable to detect arrival: will not update arrival time')
+            return
+        end
     else
         try 
             [locs, snr_dbs] = arrayfun(@(x) PhasePicker(data((tt1b-sb-samples):tt2b), dt, type, pflag, Tn, xi, x, o), nbins);
@@ -46,6 +50,9 @@ function [tt1b tt2b] = automated_arrival(xi, nbins, samples, phase, dtype, data,
         if loc >= 0
             tt1b = tt1b + loc/dt - sb - samples;
             tt2b = tt1b + np - 1;
+        else
+            elog_notify('Unable to detect arrival: will not update arrival time')
+            return
         end
     end 
 end            
