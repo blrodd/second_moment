@@ -40,7 +40,6 @@ classdef Data
 
             % set table view
             dbview = dbprocess(db, steps);
-
             % if no records return from function
             if dbnrecs(dbview) == 0
                 elog_notify(sprintf('No traces after subset for sta=~/%s/ && chan=~/%s/', sta, chan_code))
@@ -59,7 +58,7 @@ classdef Data
                 %
                 % LOAD DATA
                 %
-                
+            
                 % if data is not readable, return from function
                 try
                     tr = trload_css(dbview, starttime, endtime);
@@ -68,7 +67,6 @@ classdef Data
                     elog_notify(sprintf('Could not read data for %s:%s', sta, chan_code))
                     return
                 end
-                
                 % if no data, return from function
                 if dbnrecs(tr) == 0
                     elog_notify(sprintf('No data after trload for %s:%s', sta, chan_code))
@@ -114,6 +112,7 @@ classdef Data
                     [warnMsg, warnId] = lastwarn;
                     if ~isempty(warnMsg)
                         elog_notify(sprintf('Problems with rotating %s:%s', sta, chan_code))
+                        lastwarn('')
                         return
                     end
                 catch
