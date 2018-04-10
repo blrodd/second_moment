@@ -206,8 +206,8 @@ else
     snr_db = SNR(x,x(1:loc/dt));
 end
 
-fprintf('P-phase arrival time in second = %5.2f\n',loc);
-fprintf('SNR in decibel = %5.2f\n',snr_db);
+%fprintf('P-phase arrival time in second = %5.2f\n',loc);
+%fprintf('SNR in decibel = %5.2f\n',snr_db);
 
 if pflag == 'Y' || pflag == 'y';
     fsz = 16; lw = 1;   % font size and line width
