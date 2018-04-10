@@ -14,7 +14,7 @@ dhatsv=zeros(ns,Npts);
 GFsv=zeros(ns,Npts);
 STF=zeros(ns,Npts);
 STF_sm=zeros(size(STF));
-Tsv=zeros(ns,1); 
+Ttsv=zeros(ns,1); 
 T1sv=zeros(ns,1);
 epsv=zeros(ns,1);
 epldsv=zeros(ns,Npts);
@@ -48,8 +48,6 @@ if ~mode_run.interactive
         end
         
         if doi == 1;
-            %whos tms tegf velMS velEGF
-            
             % If debug_plot mode, plot EGF and MS data together.
             if mode_run.debug_plot
                 figure
@@ -64,8 +62,6 @@ if ~mode_run.interactive
                 close
             end
 
-
-         
             % Get samples since waveform start of arrival (8 seconds after start). 
             t = 8./dtsv(i);
         
@@ -85,276 +81,9 @@ if ~mode_run.interactive
             %len = 3; 
             samps_before = 50;
             samps_after = len./dtsv(i);
-            tt2b = t + samps_after;
-            tt1b = t - samps_before;
-           
-
-           %%% PHASE PICKER TO IMPROVE ARRIVAL TIMES %%%
-    
-           % testing parameters
-           % if strcmp(phasem(i), 'P')
-           %     xis = [0.001 0.1 0.3 0.5 0.7 0.9 0.999];
-           %     bins = [10 25 50 100]
-           %     for x = xis
-           %         Tn = 0.01;
-           %         xi = x;
-           %         
-           %         for b = bins
-           %             nbins = b;
-           %             o = 'to_peak';
-           %             type = 'na';
-           %             pflag = 'Y';
-           %             try
-           %                 [loc, snr_db] = PhasePicker(velMS_rot((tt1b):tt2b), dtsv(i), type, pflag, Tn, xi, nbins, o);
-           %             catch
-           %                 'Cannot run picker'
-           %             end
-           %             if loc >= 0
-           %                 [xi, nbins]
-           %                 k = waitforbuttonpress
-           %             end
-           %         end
-           %         % if new arrival was selected update waveform window 
-           %     end 
-           % end
-            
-            %
-            if strcmp(phasem(i), 'P')
-                xi = 0.5;
-                nbins = [25 50 100 2/dtsv(i)];
-                s = 0;
-            end
-            
-            if strcmp(phasem(i), 'S')
-                xi = 0.99;
-                nbins = [10 15 20 50];
-                s = 30;
-            end
-            [tt1b tt2b] = automated_arrival(xi, nbins, s, phasem(i), 'MS', velMS_rot, tt1b, tt2b, samps_before, samps_after, dtsv(i));
-            t = tt1b + samps_before; 
-
-            if mode_run.debug_plot
-                figure
-                plot(velMS);
-                hold on
-                vline(tt1b,'green')
-                hold on
-                vline(tt2b, 'green')
-                hold on
-                vline(t, 'red') 
-                title(strcat('MS: ', stasm{i}, '-', compm{i}))
-                k = waitforbuttonpress;
-                close
-            end
-
-            % Do not allow data window to be too long, longer than Npts defined above.
-            if(tt2b-tt1b>=Npts)
-                data=velMS(tt1b:tt1b+Npts-1);
-            else
-                data=velMS(tt1b:tt2b); 
-            end
-            clf
-            
-
-            if mode_run.debug_plot
-                figure
-                plot(data);
-                hold on
-                vline(50, 'red') 
-                title(strcat('MS Window: ', stasm{i}, '-', compm{i}))
-                k = waitforbuttonpress;
-                close
-            end
-            % add an interactive face if you want to change pick
-            % could be useful to have option to add picks to stations without useable arrivals -- big rewrite
-            % discuss with Juan, basically would grab data for every station present
-            % for loop through that in this file and if use=='y', use that arrival
-            % if use=='n' & in interactive mode, have option to pick arrivals
-            % DONT WORRY ABOUT THIS FOR NOW
-         
-            % T1 is arrival - 3 seconds since inversion window
-            T1=samps_before - 3;
-            
-            % taper inversion window
-            np=length(data);
-            zz=taper(np,.1);
-            data=data.*zz; 
-          
-            % add trailing 0s after data until Npts
-            data(np+1:Npts)=0;
-         
-            % new data matrix
-            datasv(i,1:Npts)=data';
-         
-            % np = length of inversion window
-            % T1 = MS arrival - 3 seconds since inversion window
-            np=np-T1;
-         
-            % tt1b = arrival time since window beginning
-            % tt2b = arrival time + MS inversion window length - (arrival - 3) - 1
-            tt1b = t;
-            tt2b=tt1b+np-1;
-           
-           % testing best parameters
-           % if strcmp(phasem(i), 'P')
-           %     xis = [0.001 0.1 0.3 0.5 0.7 0.9 0.999];
-           %     bins = [10 25 50 100]
-           %     for x = xis
-           %         Tn = 0.01;
-           %         xi = x;
-           %         
-           %         for b = bins
-           %             nbins = b;
-           %             o = 'to_peak';
-           %             type = 'na';
-           %             pflag = 'Y';
-           %             try
-           %                 [loc, snr_db] = PhasePicker(velEGF_rot((tt1b-samps_before):tt2b), dtsv(i), type, pflag, Tn, xi, nbins, o);
-           %             catch
-           %                 'Cannot run picker'
-           %             end
-           %             if loc >= 0
-           %                 [xi, nbins]
-           %                 k = waitforbuttonpress
-           %             end
-           %         end
-           %         % if new arrival was selected update waveform window 
-           %     end
-           % end 
-            
-            if strcmp(phasem(i), 'P')
-                xi = 0.5;
-                nbins = [25 50 100 2/dtsv(i)];
-                s = 0;
-            end
-            
-            if strcmp(phasem(i), 'S')
-                xi = 0.99;
-                nbins = [10 15 20 50];
-                s = 30;
-            end
-            [tt1b tt2b] = automated_arrival(xi, nbins, s,  phasem(i), 'EGF', velMS_rot, tt1b, tt2b, samps_before, samps_after, dtsv(i), np);
-            
-            if mode_run.debug_plot
-                figure
-                plot(velEGF);
-                hold on
-                vline(tt1b, 'green')
-                vline(tt2b, 'green') 
-                title(strcat('EGF: ', stasm{i}, '-', compm{i}))
-                k = waitforbuttonpress;
-                close
-            end
-         
-            % EGF data is cut to EGF arrival time to tt2b 
-            % length(EGF) is length(MS) - T1     
-            GF=velEGF(tt1b:tt2b);
-         
-            if mode_run.debug_plot
-                figure
-                plot(GF);
-                title(strcat('EGF Window: ', stasm{i}, '-', compm{i}))
-                k = waitforbuttonpress;
-            end
-            % do not taper EGF
-            zz=taper(np,.1);
-            zz(1:np/2)=1;
-            
-            % add trailing 0s after data until Npts
-            GF(np+1:Npts)=0;
-         
-            % new EGF data matrix
-            GFsv(i,1:Npts)=GF';
-            
-            % get RSTF
-            % inputs MS data, EGF data, T1, number of iterations
-            [f,dhat,T,eps,tpld,epld]=pld(data,GF,T1,niter);
-         
-            % f - RSTF (apparent source time function)
-            % dhat - RSTF * EGF (fit to the data seismogram
-            % T - duration pick
-            % eps - misfit of T
-            % tpld - misfit
-            % epld - duration tradeoff
-         
-            % finds 2nd moment of RSTF (t2) and mean centroid time (t1)
-            [t2(i),t1(i),t0(i)]=findt2(f,pickt2);
-            dt=dtsv(i);
-            t2(i)=t2(i)*dt*dt;
-            STF(i,1:Npts)=f';
-            dhatsv(i,1:Npts)=dhat';
-            Tsv(i)=(T-T1)*dt;
-            T1sv(i)=T1*dt;
-            epsv(i)=eps;
-            npld=length(tpld);
-            epldsv(i,1:npld)=epld(1:npld);
-            tpldsv(i,1:npld)=tpld(1:npld);
-            [junk,ind]=min(abs(tpld-T));
-            PhaseSv(i) = phasem{i}; 
-            if mode_run.verbose
-                elog_notify(sprintf('   Misfit: %s ', epld(ind)))
-                elog_notify(sprintf('   Apparent Duration: %s s', num2str(2*sqrt(t2(i)),2)))    
-                elog_notify(sprintf('   ASTF Moment: %s', num2str(sum(STF(i,:)),5)))
-            end
-        
-            if mode_run.debug_plot 
-                % plot the 4 graphs
-                figure
-                dt=dtsva(i);
-                subplot(2,2,1)
-             
-                % plot MS data
-                plot([1:length(data)]*dt,data/max(data),'k'); hold on;
-             
-                % plot EGF data
-                plot(dt*t1(i)+[1:length(GF)]*dt,GF/max(GF),'r');
-                %xlim([0,length(data)*dt])
-                xlim([0 5]); ylim([-1.1 1.1]);
-                xlabel('Time (s)')
-                legend('Data','EGF');
-                title([stasm{i},' ',compm{i}]);  
-                
-                % plot ASTF
-                subplot(2,2,2)
-                plot([1:length(STF(i,:))]*dt,STF(i,:)); hold on;
-                xlabel('Time (s)')
-                title(['ASTF, moment:',num2str(sum(STF(i,:)),5)]);
-                plot(t0(i)*dt,STF(round(t0(i))),'*')
-                ylim([0 1.05*max(STF(i,:))])
-                text(.1,.8*max(STF(i,:)),['ApprDur:',num2str(2*sqrt(t2(i)),2),' s'])
-                xlim([0 2.1*t0(i)*dt]);
-                %xlim([0,3*T1sv(i)])
-             
-                % plot misfit     
-                subplot(2,2,3)
-                plot(tpld*dt,epld); hold on;
-                xlabel('Time (s)');
-                ylabel('Misfit');
-                xlim([0 3*t0(i)*dt])
-                plot(tpld(ind)*dt,epld(ind),'*')
-                ylim([0 1])
-                
-                % plot seismogram fit
-                subplot(2,2,4)
-                plot([1:length(data)]*dt,data,'k')
-                hold on
-                plot([1:length(dhat)]*dt,dhat,'r')
-                legend('Data','EGF*STF')
-                title(['Seismogram Fit']);
-                %xlim([0,length(data)*dt])
-                xlim([0 5]);
-                xlabel('Time (s)')
-                
-                k = waitforbuttonpress;
-                close
-                end
-
-            Mf(i) = epld(ind); 
-            if epld(ind) > misfit_criteria
-                elog_notify(sprintf('   DO NOT USE %s_%s: Misfit %.2f > %.2f', stasm{i}, compm{i}, epld(ind), misfit_criteria))
-            else
-                DONE(i) = 1;
-            end
+            [t2(i), DONE, STF(i,1:Npts),GFsv(i,1:Npts),dhatsv(i,1:Npts),datasv(i,1:Npts),Tsv(i),T1sv(i),epsv(i),EPLDsv,TPLDsv,t0(i),t1(i),PhaseSv(i)] = astf_calculation(velMS, velEGF, dtsv(i), tms, tegf, stasm{i}, compm{i}, phasem(i), t, samps_before, samps_after, Npts, velMS_rot, velEGF_rot, niter, pickt2, misfit_criteria);
+            epldsv(i,1:length(epldsv))=EPLDsv;
+            tpldsv(i,1:length(tpldsv))=TPLDsv;
         end; %if
     end %for loop
 
@@ -684,3 +413,58 @@ end
 disp('Done Making Measurements');
 
 
+           %%% PHASE PICKER TO IMPROVE ARRIVAL TIMES %%%
+    
+           % testing parameters
+           % if strcmp(phasem(i), 'P')
+           %     xis = [0.001 0.1 0.3 0.5 0.7 0.9 0.999];
+           %     bins = [10 25 50 100]
+           %     for x = xis
+           %         Tn = 0.01;
+           %         xi = x;
+           %         
+           %         for b = bins
+           %             nbins = b;
+           %             o = 'to_peak';
+           %             type = 'na';
+           %             pflag = 'Y';
+           %             try
+           %                 [loc, snr_db] = PhasePicker(velMS_rot((tt1b):tt2b), dtsv(i), type, pflag, Tn, xi, nbins, o);
+           %             catch
+           %                 'Cannot run picker'
+           %             end
+           %             if loc >= 0
+           %                 [xi, nbins]
+           %                 k = waitforbuttonpress
+           %             end
+           %         end
+           %         % if new arrival was selected update waveform window 
+           %     end 
+           % end
+            
+           % testing best parameters
+           % if strcmp(phasem(i), 'P')
+           %     xis = [0.001 0.1 0.3 0.5 0.7 0.9 0.999];
+           %     bins = [10 25 50 100]
+           %     for x = xis
+           %         Tn = 0.01;
+           %         xi = x;
+           %         
+           %         for b = bins
+           %             nbins = b;
+           %             o = 'to_peak';
+           %             type = 'na';
+           %             pflag = 'Y';
+           %             try
+           %                 [loc, snr_db] = PhasePicker(velEGF_rot((tt1b-samps_before):tt2b), dtsv(i), type, pflag, Tn, xi, nbins, o);
+           %             catch
+           %                 'Cannot run picker'
+           %             end
+           %             if loc >= 0
+           %                 [xi, nbins]
+           %                 k = waitforbuttonpress
+           %             end
+           %         end
+           %         % if new arrival was selected update waveform window 
+           %     end
+           % end 
