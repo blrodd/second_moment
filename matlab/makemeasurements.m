@@ -27,9 +27,8 @@ dtsv=dtsva;
 % Automated mode.
 if ~mode_run.interactive
     for i=1:ns
-        if mode_run.verbose
-            elog_notify(sprintf('%s_%s ASTF CALCULATION', stasm{i}, compm{i}))
-        end
+        logging.info(sprintf('Running %s_%s_%s ASTF calculation', stasm{i}, compm{i}, string(phasem(i))))
+        
         % if EGF and MS samples > 100
         if(npEGF(i)>=100 && npMS(i)>=100)
             % grab MS data
@@ -51,7 +50,7 @@ if ~mode_run.interactive
             % If debug_plot mode, plot EGF and MS data together.
             if mode_run.debug_plot
                 figure
-    
+                logging.verbose(sprintf('Figure %d: %s_%s_%s MS & EGF Velocity Waveforms', get(gcf,'Number'), stasm{i}, compm{i}, string(phasem(i))))
                 plot(tms-tms(1),velMS/max(velMS));
                 hold on
                 title([stasm{i},'-',compm{i}])
@@ -59,7 +58,6 @@ if ~mode_run.interactive
                 plot(tegf-tegf(1),velEGF/max(velEGF),'r');
                 legend('Mainshock','EGF'); xlabel('Time (s)');
                 k = waitforbuttonpress;
-                close
             end
 
             % Get samples since waveform start of arrival (8 seconds after start). 
@@ -105,9 +103,7 @@ if ~mode_run.interactive
     end
     good = find(DONE == 1);
 
-    if mode_run.verbose
-        elog_notify(sprintf('Usable stations: %s', strjoin(strcat({stasm{good}}, '_', {compm{good}}))))
-    end
+    logging.verbose(sprintf('Usable stations: %s', strjoin(strcat({stasm{good}}, '_', {compm{good}}))))
 
 %                  %
 % INTERACTIVE MODE %

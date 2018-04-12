@@ -33,7 +33,7 @@ classdef Origin
             table = dbsubset(EQ.joinevent, string);
 
             if dbnrecs(table) == 0
-                elog_die(sprintf('Table subset for orid %s has no records', orid))
+                logging.die(sprintf('Table subset for orid %s has no records', orid))
             end
 
             if dbnrecs(table) > 1
@@ -53,16 +53,17 @@ classdef Origin
                 [estatus,emag,estrike1,estrike2,edip1,edip2]=dbgetv(mt_join, 'estatus', 'drmag', 'str1', 'str2', 'dip1', 'dip2');
                 if (estatus == 'Quality: 0') | (estatus == 'Quality: 1')
                     mt_flag = 1;
-                    elog_notify('MT Quality < 2: Do not use fault dimensions')
+                    logging.verbose('MT Quality < 2: Do not use fault dimensions')
                 else
                     mt_flag = 0;
-                    elog_notify('MT Quality >= 2: Use fault dimensions')
+                    logging.verbose('MT Quality >= 2: Use fault dimensions')
                 end
             else
               mt_flag = 1;
-              elog_notify('MT solution does not exist')
+              logging.warning('MT solution does not exist')
             end
 
+            % will change after example
             if mt_flag == 1;
                 strike1 = 307; dip1 = 83;
                 strike2 = 216; dip2 = 82; % from moment tensor solution
@@ -104,7 +105,7 @@ classdef Origin
                 end
             orids = egforids;
             else
-              elog_die(sprintf('No aftershock in database for orid %s', EQ.eqinfo.eorid))
+              logging.die(sprintf('No aftershock in database for orid %s', EQ.eqinfo.eorid))
             end
         end %function
         
@@ -209,13 +210,13 @@ classdef Origin
                 ms = find(strcmp({EQ.arrivals.sta}, sta) == 1 & strcmp({EQ.arrivals.iphase}, 'S') == 1);
                 
                 if length(mp) > 1
-                    elog_notify(sprintf('More than 1 arrival for station %s phase P. Using the first arrival', sta))
+                    logging.warning(sprintf('More than 1 arrival for station %s phase P. Using the first arrival', sta))
                     clear EQ.arrivals(mp(2));
                     mp = mp(1);
                 end
                 
                 if length(ms) > 1
-                    elog_notify(sprintf('More than 1 arrival for station %s phase S. Using the first arrival', sta))
+                    logging.warning(sprintf('More than 1 arrival for station %s phase S. Using the first arrival', sta))
                     clear EQ.arrivals(ms(2));
                     ms = ms(1);
                 end

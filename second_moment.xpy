@@ -214,6 +214,8 @@ def execute(command):
         nextline = process.stdout.readline()
         if nextline == '' and process.poll() is not None:
             break
+        nextline = nextline.lstrip('>> ')
+        nextline = nextline.lstrip('MATLAB_maci64: ')
         sys.stdout.write(nextline)
         sys.stdout.flush()
  

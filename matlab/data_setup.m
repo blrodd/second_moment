@@ -27,7 +27,7 @@ function [compm dtsv npEGF npMS slat slon stasm phasem velEGF velMS velEGF_rot v
 global mode_run
 
 if mode_run.verbose
-    elog_notify(sprintf('Getting origin information for orid %s', orid))
+    logging.verbose(sprintf('Getting origin information for orid %s', orid))
 end
 
 EGF = Origin(db, orid);

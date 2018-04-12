@@ -42,7 +42,7 @@ classdef Data
             dbview = dbprocess(db, steps);
             % if no records return from function
             if dbnrecs(dbview) == 0
-                elog_notify(sprintf('No traces after subset for sta=~/%s/ && chan=~/%s/', sta, chan_code))
+                logging.warning(sprintf('No traces after subset for sta=~/%s/ && chan=~/%s/', sta, chan_code))
                 return
             end
 
@@ -64,18 +64,18 @@ classdef Data
                     tr = trload_css(dbview, starttime, endtime);
                     %trsplice(tr)
                 catch
-                    elog_notify(sprintf('Could not read data for %s:%s', sta, chan_code))
+                    logging.warning(sprintf('Could not read data for %s:%s', sta, chan_code))
                     return
                 end
                 % if no data, return from function
                 if dbnrecs(tr) == 0
-                    elog_notify(sprintf('No data after trload for %s:%s', sta, chan_code))
+                    logging.warning(sprintf('No data after trload for %s:%s', sta, chan_code))
                     return
                 end
 
                 % if more than 3 records, return from function
                 if dbnrecs(tr) > 3
-                    elog_notify(sprintf('Too many traces after trload_cssgrp for %s:%s', sta, chan_code))
+                    logging.warning(sprintf('Too many traces after trload_cssgrp for %s:%s', sta, chan_code))
                     return
                 end
                 
@@ -101,7 +101,7 @@ classdef Data
                     segtype = 'V';
 
                 else
-                    elog_notify(sprintf('Unknown data type for %s:%s', sta, chan_code))
+                    logging.warning(sprintf('Unknown data type for %s:%s', sta, chan_code))
                     return
                 end
                 
@@ -111,12 +111,12 @@ classdef Data
                     trrotate(tr, esaz, 0, {'T','R','Z'});
                     [warnMsg, warnId] = lastwarn;
                     if ~isempty(warnMsg)
-                        elog_notify(sprintf('Problems with rotating %s:%s', sta, chan_code))
+                        logging.warning(sprintf('Problems rotating %s:%s', sta, chan_code))
                         lastwarn('')
                         return
                     end
                 catch
-                    elog_notify(sprintf('Problems with rotating %s:%s', sta, chan_code))
+                    logging.warning(sprintf('Problems rotating %s:%s', sta, chan_code))
                     return
                 end
  
@@ -124,7 +124,7 @@ classdef Data
                 try
                     trfilter(tr, filter);
                 catch
-                    elog_notify(sprintf('Problems with filter %s for %s:%s', filter, sta, chan_code))
+                    logging.warning(sprintf('Problems with filter %s for %s:%s', filter, sta, chan_code))
                     return
                 end
 
@@ -166,10 +166,10 @@ classdef Data
                 WF.data = data;
             
             elseif dbnrecs(tr) > 1
-                elog_notify(sprintf('More than 1 trace for %s:%s', WF.sta, chan))
+                logging.warning(sprintf('More than 1 trace for %s:%s', WF.sta, chan))
                 return
             elseif dbnrecs(tr) == 0
-                elog_notify(sprintf('No traces for %s:%s', WF.sta, chan))
+                logging.warning(sprintf('No traces for %s:%s', WF.sta, chan))
                 return
             end
  
@@ -196,10 +196,10 @@ classdef Data
                 % data = data[tw:2*tw]
                 
             elseif dbnrecs(tr_rot) > 1
-                elog_notify(sprintf('More than 1 trace for %s:%s', WF.sta, chan))
+                logging.warning(sprintf('More than 1 trace for %s:%s', WF.sta, chan))
                 return
             elseif dbnrecs(tr_rot) == 0
-                elog_notify(sprintf('No traces for %s:%s', WF.sta, chan))
+                logging.warning(sprintf('No traces for %s:%s', WF.sta, chan))
                 return
             end
         end % function 

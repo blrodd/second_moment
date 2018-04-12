@@ -2,11 +2,11 @@ function [t2, done, stf,gfsv,dhatsv,datasv,tsv,t1sv,epsv,epldsv,tpldsv,t0,t1,pha
     global mode_run
     % set defaults for optional parameters
     if nargin < 17
-        elog_error('Not enough input arguments in astf_calculation')
+        logging.die('Not enough input arguments in astf_calculation')
     elseif nargin == 17
-        update_arrival = 0;
+        logging.die = 0;
     elseif nargin > 18
-        elog_error('Too many input arguments in astf_calculation')
+        logging.die('Too many input arguments in astf_calculation')
     end  
 
     tt2b = t + samps_after;
@@ -30,6 +30,7 @@ function [t2, done, stf,gfsv,dhatsv,datasv,tsv,t1sv,epsv,epldsv,tpldsv,t0,t1,pha
 
     if mode_run.debug_plot
         figure
+        logging.verbose(sprintf('Figure %d: %s_%s_%s Mainshock Velocity Waveform', get(gcf,'Number'), sta, comp, string(phase)))
         plot(velMS);
         hold on
         vline(tt1b,'green')
@@ -39,7 +40,6 @@ function [t2, done, stf,gfsv,dhatsv,datasv,tsv,t1sv,epsv,epldsv,tpldsv,t0,t1,pha
         vline(t, 'red')
         title(strcat('MS: ', sta, '-', comp))
         k = waitforbuttonpress;
-        close
     end
 
     % Do not allow data window to be too long, longer than Npts defined above.
@@ -52,12 +52,12 @@ function [t2, done, stf,gfsv,dhatsv,datasv,tsv,t1sv,epsv,epldsv,tpldsv,t0,t1,pha
     
     if mode_run.debug_plot
         figure
+        logging.verbose(sprintf('Figure %d: %s_%s_%s Mainshock Inversion Window', get(gcf,'Number'), sta, comp, string(phase)))
         plot(data);
         hold on
         vline(50, 'red')
         title(strcat('MS Window: ', sta, '-', comp))
         k = waitforbuttonpress;
-        close
     end
 
     % T1 is arrival - 3 seconds since inversion window
@@ -100,13 +100,13 @@ function [t2, done, stf,gfsv,dhatsv,datasv,tsv,t1sv,epsv,epldsv,tpldsv,t0,t1,pha
 
     if mode_run.debug_plot
         figure
+        logging.verbose(sprintf('Figure %d: %s_%s_%s EGF Velocity Waveform', get(gcf,'Number'), sta, comp, string(phase)))
         plot(velEGF);
         hold on
         vline(tt1b, 'green')
         vline(tt2b, 'green')
         title(strcat('EGF: ', sta, '-', comp))
         k = waitforbuttonpress;
-        close
     end
 
     % EGF data is cut to EGF arrival time to tt2b 
@@ -115,6 +115,7 @@ function [t2, done, stf,gfsv,dhatsv,datasv,tsv,t1sv,epsv,epldsv,tpldsv,t0,t1,pha
 
     if mode_run.debug_plot
         figure
+        logging.verbose(sprintf('Figure %d: %s_%s_%s EGF Inversion Window', get(gcf, 'Number'), sta, comp, string(phase)))
         plot(GF);
         title(strcat('EGF Window: ', sta, '-', comp))
         k = waitforbuttonpress;
@@ -155,19 +156,14 @@ function [t2, done, stf,gfsv,dhatsv,datasv,tsv,t1sv,epsv,epldsv,tpldsv,t0,t1,pha
     phasesv = phase;
   
     if epld(ind) > misfit_criteria && ~update_arrival && mode_run.auto_arrival
-        elog_notify(sprintf('Misfit %0.2f > Criteria %0.2f: Attempting to detect arrival to improve result', epld(ind), misfit_criteria)) 
+        logging.verbose(sprintf('Misfit %0.2f > Criteria %0.2f: Attempting to detect arrival to improve result', epld(ind), misfit_criteria)) 
         update_arrival = 1;
-        [t2,done,stf,gfsv,dhatsv,datasv,tsv,t1sv,epsv,epldsv,tpldsv,t0,t1,phasesv] = astf_calculation(velMS, velEGF, dt, tms, tegf, sta, comp, phase, t, samps_before, samps_after, Npts, velMS_rot, velEGF_rot, niter, pickt2, misfit_criteria, update_arrival)    
+        [t2,done,stf,gfsv,dhatsv,datasv,tsv,t1sv,epsv,epldsv,tpldsv,t0,t1,phasesv] = astf_calculation(velMS, velEGF, dt, tms, tegf, sta, comp, phase, t, samps_before, samps_after, Npts, velMS_rot, velEGF_rot, niter, pickt2, misfit_criteria, update_arrival); 
     else
-        if mode_run.verbose
-            elog_notify(sprintf('   Misfit: %s ', epld(ind)))
-            elog_notify(sprintf('   Apparent Duration: %s s', num2str(2*sqrt(t2),2)))
-            elog_notify(sprintf('   ASTF Moment: %s', num2str(sum(stf(:)),5)))
-        end
-
         if mode_run.debug_plot
             % plot the 4 graphs
             figure
+            logging.verbose(sprintf('Figure %d: %s_%s_%s ASTF Results', get(gcf,'Number'), sta, comp, string(phase)))
             subplot(2,2,1)
 
             % plot MS data
@@ -212,13 +208,16 @@ function [t2, done, stf,gfsv,dhatsv,datasv,tsv,t1sv,epsv,epldsv,tpldsv,t0,t1,pha
             xlim([0 5]);
             xlabel('Time (s)')
 
-
             k = waitforbuttonpress;
-            close
+            close all
         end
 
+        logging.verbose(sprintf('Misfit: %0.2f ', epld(ind)))
+        logging.verbose(sprintf('Apparent Duration: %0.4f s', num2str(2*sqrt(t2),2)))
+        logging.verbose(sprintf('ASTF Moment: %0.1f', num2str(sum(stf(:)),5)))
+
         if epld(ind) > misfit_criteria
-            elog_notify(sprintf('   DO NOT USE %s_%s: Misfit %.2f > %.2f', sta, comp, epld(ind), misfit_criteria))
+            logging.info(sprintf('DO NOT USE %s_%s_%s: Misfit %.2f > Criteria %.2f', sta, comp, string(phase), epld(ind), misfit_criteria))
             done = 0;
         else
             done = 1;
