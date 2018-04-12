@@ -82,8 +82,8 @@ if ~mode_run.interactive
             samps_before = 50;
             samps_after = len./dtsv(i);
             [t2(i), DONE, STF(i,1:Npts),GFsv(i,1:Npts),dhatsv(i,1:Npts),datasv(i,1:Npts),Tsv(i),T1sv(i),epsv(i),EPLDsv,TPLDsv,t0(i),t1(i),PhaseSv(i)] = astf_calculation(velMS, velEGF, dtsv(i), tms, tegf, stasm{i}, compm{i}, phasem(i), t, samps_before, samps_after, Npts, velMS_rot, velEGF_rot, niter, pickt2, misfit_criteria);
-            epldsv(i,1:length(epldsv))=EPLDsv;
-            tpldsv(i,1:length(tpldsv))=TPLDsv;
+            epldsv(i,1:length(EPLDsv))=EPLDsv;
+            tpldsv(i,1:length(TPLDsv))=TPLDsv;
         end; %if
     end %for loop
 
