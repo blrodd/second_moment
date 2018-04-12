@@ -30,7 +30,7 @@ import antelope.stock as stock
 code_sub_folder = 'matlab'
 matlab_code_folder = '/Users/rrodd/bin/second_moment' + '/' + code_sub_folder
 sys.path.append( matlab_code_folder )
-matlab_code = matlab_code_folder + '/' + 'runSJFex.m'
+matlab_code = matlab_code_folder + '/' + 'run_second_moment.m'
 
 #
 # Get command-line arguments
@@ -78,7 +78,6 @@ parser.add_option("-t", "--time_window", action="store", type="string", dest="tw
 
 (options, args) = parser.parse_args()
 
-
 # parse parameter file
 pf = stock.pfread( options.pf )
 pf_file = stock.pffiles( options.pf )[0]
@@ -115,6 +114,9 @@ matlab_path = pf['matlab_path']
 matlab_flags = pf['matlab_flags']
 xvfb_path = pf['xvfb_path']
 matlab_nofig = pf['matlab_nofig']
+
+# on/off for features
+auto_arrival = pf['auto_arrival']
 
 # egf selection criteria
 loc_margin = float(pf['location_margin'])
@@ -193,12 +195,12 @@ cmd = "%s -r \"verbose='%s'; debug='%s'; debug_plot='%s'; interactive='%s'; no_f
                 ; image_dir='%s'; temp_dir='%s'; db='%s'; orid=%d; egf=%d; reject='%s'; select='%s'; filter='%s' \
                 ; tw='%s'; misfit_criteria=%.2f; loc_margin=%.4f; dep_margin=%.2f \
                 ; time_margin=%.1f; LOADDATAFILE=%d; DOMEAS=%d; PICKt2=%d; DOINVERSION=%d; DOJACKKNIFE=%d \
-                ; AZBAND=%d; DOBOOTSTRAP=%d; NB=%d; BCONF=%.2f; NITER=%d\" < '%s'"  \
+                ; AZBAND=%d; DOBOOTSTRAP=%d; NB=%d; BCONF=%.2f; NITER=%d; auto_arrival='%s'; \" < '%s'"  \
                 % (matlab_path, options.verbose, options.debug, options.debug_plot, options.interactive \
                 , options.no_figure, image_dir, temp_dir, args[0], int(args[1]), options.egf, options.reject \
                 , options.select, options.filter, options.tw, stf_duration_criteria \
                 , loc_margin, dep_margin, time_margin, loaddatafile, domeas, pickt2, doinversion \
-                , dojackknife, azband, dobootstrap, nb, bconf, niter, matlab_code)
+                , dojackknife, azband, dobootstrap, nb, bconf, niter, auto_arrival, matlab_code)
 
 logging.info( " - Run Matlab script:"  )
 logging.info( "   %s " % cmd  )

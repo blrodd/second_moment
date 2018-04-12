@@ -9,7 +9,10 @@ dobootstrap	0	# run bootstrapping
 nb		1000	# number of bootstrap iterations to run
 bconf		0.95	# confidence level to determine bootstrap bounds
 niter		100	# number of iterations in the PLD deconvultions; > 50 usually needed
-	
+
+# turn on/off features
+auto_arrival	True
+
 # egf selection criteria
 location_margin	0.05
 depth_margin	10
