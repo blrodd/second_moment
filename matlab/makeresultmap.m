@@ -9,6 +9,7 @@ end
 hh=scatter(slon(IJ),slat(IJ),100,2*sqrt(t2(IJ)),'filled'); hold on;
 colormap(jet); colorbar; caxis([.9*min(tauc(IJ)) 1.1*max(tauc(IJ))])
 plot(lone,late,'k^','MarkerSize',15,'MarkerFaceColor','r');
+%text(slon, slat, stasm)
 axis([-117.0 -115.9 33.0 34.1])
 axis('equal')
 clear Xf Yf
