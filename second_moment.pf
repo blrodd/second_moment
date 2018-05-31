@@ -31,7 +31,7 @@ temp_dir	./.second_moment
 
 # How do we run the main Matlab framework...
 xvfb_path    /usr/X11/bin/Xvfb
-matlab_path  /Applications/MATLAB_R2017b.app/bin/matlab
+matlab_path  /Applications/MATLAB_R2018a.app/bin/matlab
 matlab_flags -nodesktop -nosplash
 matlab_nofig -noFigureWindows
 

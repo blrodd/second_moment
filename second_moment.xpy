@@ -1,4 +1,4 @@
-#!/opt/antelope/5.6/bin/python
+#!/opt/antelope/5.8/bin/python
 
 """ Python wrapper for McGuire 2017 MATLAB second moment program """
 
@@ -28,7 +28,7 @@ import antelope.stock as stock
 
 # Set path of matlab script
 code_sub_folder = 'matlab'
-matlab_code_folder = '/Users/rrodd/bin/second_moment' + '/' + code_sub_folder
+matlab_code_folder = '/Users/rrodd/work/second_moment' + '/' + code_sub_folder
 sys.path.append( matlab_code_folder )
 matlab_code = matlab_code_folder + '/' + 'run_second_moment.m'
 

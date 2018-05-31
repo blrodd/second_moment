@@ -16,10 +16,10 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Initiate Antelope-matlab interface.
-run('/opt/antelope/5.8pre/setup.m')
+run('/opt/antelope/5.8/setup.m')
 
 % Add matlab files to MATLABPATH.
-addpath(genpath('/Users/rrodd/bin/second_moment/matlab'));
+addpath(genpath('/Users/rrodd/work/second_moment/matlab'));
 
 % Modes to run data in (e.g. verbose, interactively, etc.)
 global mode_run;
