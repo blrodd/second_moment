@@ -69,38 +69,66 @@ if ~mode_run.interactive
         
             if strcmp(phasem(i),'P') == 1 & duration(i)
                 len = floor(duration(i));
-                 if len > 3
-                   len = 3;
+                 if len > 2
+                   len = 2;
                  end
             else
-                len = 3;
+                len = 1.5;
             end
 
             %len = 3; 
             samps_before = 50;
             samps_after = len./dtsv(i);
-            [t2(i), DONE, STF(i,1:Npts),GFsv(i,1:Npts),dhatsv(i,1:Npts),datasv(i,1:Npts),Tsv(i),T1sv(i),epsv(i),EPLDsv,TPLDsv,t0(i),t1(i),PhaseSv(i)] = astf_calculation(velMS, velEGF, dtsv(i), tms, tegf, stasm{i}, compm{i}, phasem(i), t, samps_before, samps_after, Npts, velMS_rot, velEGF_rot, niter, pickt2, misfit_criteria);
+            [t2(i), DONE(i), STF(i,1:Npts),GFsv(i,1:Npts),dhatsv(i,1:Npts),datasv(i,1:Npts),Tsv(i),T1sv(i),epsv(i),EPLDsv,TPLDsv,t0(i),t1(i),PhaseSv(i),L_curve_ratio(i)] = astf_calculation(velMS, velEGF, dtsv(i), tms, tegf, stasm{i}, compm{i}, phasem(i), t, samps_before, samps_after, Npts, velMS_rot, velEGF_rot, niter, pickt2, misfit_criteria);
             epldsv(i,1:length(EPLDsv))=EPLDsv;
             tpldsv(i,1:length(TPLDsv))=TPLDsv;
         end; %if
     end %for loop
 
-% Flag ones with same station twice, and select the better result.
-% Only use results of apparent duration in 1 std. 
+    % Only use results of apparent duration in 1.5 standard deviation of mean. 
     gids = find(DONE == 1);
     ads = 2*sqrt(t2(gids));
-    inds = find(ads > (mean(ads) + 1 * std(ads)) | ads < (mean(ads) - 1 * std(ads)));
+    inds = find(ads > (mean(ads) + 1.5 * std(ads)) | ads < (mean(ads) - 1.5 * std(ads)));
     DONE(gids(inds)) = 0;
 
+    % Flag ones with same station twice, and select the better result.
     good = find(DONE == 1);
-    [items, i] = unique({stasm{good}});
+    [items, x] = unique({stasm{good}});
     for i=1:length(items)
         ids = find(ismember({stasm{good}}, items(i)));
         if length(ids) > 1
-            [M, I] = max(Mf(good(ids))); 
+            % normalize apparent duration - mean appr. duration
+            % 0 (low deviation) - 1 (large deviation) 
+            app_z = normalize(2*sqrt(t2(good))-mean(2*sqrt(t2(good))), ids);
+            % normalized misfit
+            % 0 (low misfit) - 1 (large misfit)
+            m_z = transpose(normalize(epsv(good), ids));
+            % normalize l-curve sharpness 
+            % 0 (sharp) - 1 (not sharp)
+            l_z = normalize(L_curve_ratio(good), ids);
+            
+            % proxy for quality to compare channels
+            tot_z = app_z.*m_z.*l_z;
+            [M, I] = max(tot_z); 
             DONE(good(ids(I))) = 0;
         end 
     end
+    
+    % choose between PFO and TPFO using criteria set above
+    good = find(DONE == 1);
+    pfo_id = find(ismember({stasm{good}}, 'PFO')); 
+    tpfo_id = find(ismember({stasm{good}}, 'TPFO'));
+    m_z = [epsv(good(pfo_id)) epsv(good(tpfo_id))];
+    app_z = normalize(2*sqrt(t2(good)), [pfo_id tpfo_id]);
+    l_z = normalize(L_curve_ratio(good), [pfo_id tpfo_id]);
+    tot_z = app_z.*m_z.*l_z;
+    [M, I] = max(tot_z); 
+    if I == 1
+        DONE(good(pfo_id)) = 0;
+    else
+        DONE(good(tpfo_id)) = 0;
+    end    
+
     good = find(DONE == 1);
 
     logging.verbose(sprintf('Usable stations: %s', strjoin(strcat({stasm{good}}, '_', {compm{good}}))))

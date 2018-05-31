@@ -1,17 +1,16 @@
-function [t2, done, stf,gfsv,dhatsv,datasv,tsv,t1sv,epsv,epldsv,tpldsv,t0,t1,phasesv] = astf_calculation(velMS, velEGF, dt, tms, tegf, sta, comp, phase, t, samps_before, samps_after, Npts, velMS_rot, velEGF_rot, niter, pickt2, misfit_criteria, update_arrival)
+function [t2, done, stf,gfsv,dhatsv,datasv,tsv,t1sv,epsv,epldsv,tpldsv,t0,t1,phasesv,l_curve_ratio] = astf_calculation(velMS, velEGF, dt, tms, tegf, sta, comp, phase, t, samps_before, samps_after, Npts, velMS_rot, velEGF_rot, niter, pickt2, misfit_criteria, update_arrival)
     global mode_run
     % set defaults for optional parameters
     if nargin < 17
         logging.die('Not enough input arguments in astf_calculation')
     elseif nargin == 17
-        logging.die = 0;
+        update_arrival = 0;
     elseif nargin > 18
         logging.die('Too many input arguments in astf_calculation')
     end  
 
     tt2b = t + samps_after;
     tt1b = t - samps_before;
-    
     if update_arrival
         if strcmp(phase, 'P')
             xi = 0.5;
@@ -154,11 +153,13 @@ function [t2, done, stf,gfsv,dhatsv,datasv,tsv,t1sv,epsv,epldsv,tpldsv,t0,t1,pha
     tpldsv(1:npld)=tpld(1:npld);
     [junk,ind]=min(abs(tpld-T));
     phasesv = phase;
-  
+ 
+    l_curve_ratio =(epld(npld) - epld(ind))/(tpld(npld) - tpld(ind)) * (tpld(ind) - tpld(1))/(epld(ind) - epld(1)); 
     if epld(ind) > misfit_criteria && ~update_arrival && mode_run.auto_arrival
         logging.verbose(sprintf('Misfit %0.2f > Criteria %0.2f: Attempting to detect arrival to improve result', epld(ind), misfit_criteria)) 
         update_arrival = 1;
-        [t2,done,stf,gfsv,dhatsv,datasv,tsv,t1sv,epsv,epldsv,tpldsv,t0,t1,phasesv] = astf_calculation(velMS, velEGF, dt, tms, tegf, sta, comp, phase, t, samps_before, samps_after, Npts, velMS_rot, velEGF_rot, niter, pickt2, misfit_criteria, update_arrival); 
+        [t2,done,stf,gfsv,dhatsv,datasv,tsv,t1sv,epsv,epldsv,tpldsv,t0,t1,phasesv] = astf_calculation(velMS, velEGF, dt, tms, tegf, sta, comp, phase, t, samps_before, samps_after, Npts, velMS_rot, velEGF_rot, niter, pickt2, misfit_criteria, update_arrival);
+         
     else
         if mode_run.debug_plot
             % plot the 4 graphs
@@ -213,8 +214,8 @@ function [t2, done, stf,gfsv,dhatsv,datasv,tsv,t1sv,epsv,epldsv,tpldsv,t0,t1,pha
         end
 
         logging.verbose(sprintf('Misfit: %0.2f ', epld(ind)))
-        logging.verbose(sprintf('Apparent Duration: %0.4f s', num2str(2*sqrt(t2),2)))
-        logging.verbose(sprintf('ASTF Moment: %0.1f', num2str(sum(stf(:)),5)))
+        logging.verbose(['Apparent Duration: ', num2str(2*sqrt(t2),2), ' s'])
+        logging.verbose(['ASTF Moment: ', num2str(sum(stf(:)),5)])
 
         if epld(ind) > misfit_criteria
             logging.info(sprintf('DO NOT USE %s_%s_%s: Misfit %.2f > Criteria %.2f', sta, comp, string(phase), epld(ind), misfit_criteria))
