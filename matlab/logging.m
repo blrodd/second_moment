@@ -20,19 +20,19 @@ classdef logging
        
         function info(message)
             timestamp = string(datetime('now', 'Format', 'yyyy-MM-dd HH:mm:ss.SSS'));
-            message = char(strcat(timestamp, ' second_moment[NOTIFY]: ', message));
+            message = char(strcat(timestamp, ' second_moment[INFO]: ', message));
             elog_notify(message)
         end
  
         function die(message)
             timestamp = string(datetime('now', 'Format', 'yyyy-MM-dd HH:mm:ss.SSS'));
-            message = char(strcat(timestamp, ' second_moment[NOTIFY]: ', message));
+            message = char(strcat(timestamp, ' second_moment[KILL]: ', message));
             elog_die(message)    
         end
         
         function warning(message)
             timestamp = string(datetime('now', 'Format', 'yyyy-MM-dd HH:mm:ss.SSS'));
-            message = char(strcat(timestamp, ' second_moment[NOTIFY]: ', message));
+            message = char(strcat(timestamp, ' second_moment[WARNING]: ', message));
             elog_complain(message)    
         end
     end

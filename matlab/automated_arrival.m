@@ -24,35 +24,34 @@ function [tt1b tt2b] = automated_arrival(xi, nbins, samples, phase, dtype, data,
         try 
             [locs, snr_dbs] = arrayfun(@(x) PhasePicker(data((tt1b-samples):tt2b), dt, type, pflag, Tn, xi, x, o), nbins);
         catch
-            elog_warning('Cannot run picker, try different PhasePicker parameters')
+            logging.warning('Cannot run picker, try different PhasePicker parameters')
         end 
         [max_snr, ind] = max(snr_dbs);
         loc = locs(ind);
-        
         if loc >= 0
-            elog_notify('Detected arrival: Will update arrival time')
+            logging.info('Detected arrival: Will update arrival time')
             ts = tt1b + loc/dt - samples;
             tt2b = ts + sa;
             tt1b = ts - sb;
         else
-            elog_notify('Failed to detect arrival: Will not update arrival time')
+            logging.info('Failed to detect arrival: Will not update arrival time')
             return
         end
     else
         try 
             [locs, snr_dbs] = arrayfun(@(x) PhasePicker(data((tt1b-sb-samples):tt2b), dt, type, pflag, Tn, xi, x, o), nbins);
         catch
-            elog_warning('Cannot run picker: Try different PhasePicker parameters')
+            logging.warning('Cannot run picker: Try different PhasePicker parameters')
         end 
         [max_snr, ind] = max(snr_dbs);
         loc = locs(ind);
          
         if loc >= 0
-            elog_notify('Detected arrival: Will update arrival time')
+            logging.info('Detected arrival: Will update arrival time')
             tt1b = tt1b + loc/dt - sb - samples;
             tt2b = tt1b + np - 1;
         else
-            elog_notify('Failed to detect arrival: Will not update arrival time')
+            logging.info('Failed to detect arrival: Will not update arrival time')
             return
         end
     end 
