@@ -23,8 +23,8 @@ for ii=1:length(IJ)
     subaxes2=axes('Position',[Xf(ii) Yf(ii) 0.08 0.13]);
     t=[0:(dtsv(IJ(ii))):(Npts-1)*(dtsv(IJ(ii)))];
     plot(t,STF(IJ(ii),:),'k','LineWidth',1); axis('off');
-    x1=t0(IJ(ii))*(dtsv(IJ(ii)))-2*taucmed;
-    x2=t0(IJ(ii))*(dtsv(IJ(ii)))+3*taucmed;
+    x1=t1(IJ(ii))*(dtsv(IJ(ii)))-2*taucmed;
+    x2=t1(IJ(ii))*(dtsv(IJ(ii)))+3*taucmed;
     xlim([x1, x2]); %ylim([0 45]);
 end
 

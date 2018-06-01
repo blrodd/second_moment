@@ -28,7 +28,7 @@ for ii=1:length(IJ)
     plot([1:length(STF(i,:))]*dt,STF(i,:)); hold on;
     xlabel('Time (s)')
     title(['ASTF moment:',num2str(sum(STF(i,:)))]);
-    plot(t0(i)*dt,STF(round(t0(i))),'*')
+    plot(t1(i)*dt,STF(round(t1(i))),'*')
     ylim([0 1.05*max(STF(i,:))])
     text(.1,.8*max(STF(i,:)),['\tau_c(s): '])
     text(.1,.7*max(STF(i,:)),[num2str(2*sqrt(t2(i)),2),' s'])
@@ -38,7 +38,7 @@ for ii=1:length(IJ)
     plot(tpld(i,1:npld)*dt,epld(i,1:npld)); hold on;
     xlabel('Time (s)');
     ylabel('Misfit');
-    xlim([0 3*t0(i)*dt])
+    xlim([0 3*t1(i)*dt])
     [junk,ind]=min(abs(tpld(i,1:npld)*dt-(T1sv(i)+T(i))));
     plot(tpld(i,ind)*dt,epld(i,ind),'*')
     ylim([0 1])
