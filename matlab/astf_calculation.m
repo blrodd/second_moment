@@ -1,11 +1,46 @@
-function [t2, done, stf,gfsv,dhatsv,datasv,tsv,t1sv,epsv,epldsv,tpldsv,t0,t1,phasesv,l_curve_ratio] = astf_calculation(velMS, velEGF, dt, tms, tegf, sta, comp, phase, t, samps_before, samps_after, Npts, velMS_rot, velEGF_rot, niter, pickt2, misfit_criteria, update_arrival)
+function [t2, done, stf,gfsv,dhatsv,datasv,tsv,t1sv,epsv,epldsv,tpldsv,t1,phasesv,l_curve_ratio] = astf_calculation(velMS, velEGF, dt, sta, comp, phase, t, samps_before, samps_after, Npts, velMS_rot, velEGF_rot, niter, pickt2, misfit_criteria, update_arrival)
+% ASTF CALCULATION for a given station
+% Inputs:
+%   velEGF:             EGF velocity seismogram
+%   velMS:              MS velocity seismogram
+%   velEGF_rot:         rotated EGF velocity seismogramfor automated arrival picking
+%   velMS_rot:          rotated MS velocity seismogram for automated arrival picking
+%   dt:                 data frequency (inverse of sample rate)
+%   tms:                MS arrival time
+%   tegf:               EGF arrival time
+%   sta:                station
+%   comp:               component
+%   phase:              phase
+%   t:                  arrival time since start of window
+%   samps_before:       samples before arrival time
+%   samps_after:        samples after arrival time
+%   Npts:               number of points in seismogram 
+%   niter:              number of PLD iterations
+%   pickt2:             pick t2 or not
+%   misfit_criteria:    maximum ASTF misfit threshold
+%   update_arrival:     flag to turn on/off automated arrival detection
+% Outputs:
+%   t2:                 second moment of RSTF
+%   DONE:               0 or 1 to indicate if usable ASTF
+%   STF:                array of source time function (STF)
+%   GFsv:               EGF (windowed) data matrix
+%   dhatsv:             RSTF * EGF data matrix
+%   datasv:             MS (windowed) data matrix
+%   Tsv:                [T (duration pick) - T1 (arrival - 3 secs)] * dtsva matrix
+%   T1sv:               T1 (arrival - 3 secs) * dtsva matrix
+%   epsv:               array of misfit of T
+%   epldsv:             duration tradeoff matrix
+%   tpldsv:             misfit tradeoff matrix
+%   t1:                 array mean centroid times
+%   PhaseSv:            array of phases
+
     global mode_run
     % set defaults for optional parameters
-    if nargin < 17
+    if nargin < 15
         logging.die('Not enough input arguments in astf_calculation')
-    elseif nargin == 17
+    elseif nargin == 15
         update_arrival = 0;
-    elseif nargin > 18
+    elseif nargin > 16
         logging.die('Too many input arguments in astf_calculation')
     end  
 
@@ -141,7 +176,7 @@ function [t2, done, stf,gfsv,dhatsv,datasv,tsv,t1sv,epsv,epldsv,tpldsv,t0,t1,pha
     % epld - duration tradeoff
 
     % finds 2nd moment of RSTF (t2) and mean centroid time (t1)
-    [t2,t1,t0]=findt2(f,pickt2);
+    [t2,t1]=findt2(f);
     t2=t2*dt*dt;
     stf(1:Npts)=f';
     dhatsv(1:Npts)=dhat';
@@ -158,7 +193,7 @@ function [t2, done, stf,gfsv,dhatsv,datasv,tsv,t1sv,epsv,epldsv,tpldsv,t0,t1,pha
     if epld(ind) > misfit_criteria && ~update_arrival && mode_run.auto_arrival
         logging.verbose(sprintf('Misfit %0.2f > Criteria %0.2f: Attempting to detect arrival to improve result', epld(ind), misfit_criteria)) 
         update_arrival = 1;
-        [t2,done,stf,gfsv,dhatsv,datasv,tsv,t1sv,epsv,epldsv,tpldsv,t0,t1,phasesv] = astf_calculation(velMS, velEGF, dt, tms, tegf, sta, comp, phase, t, samps_before, samps_after, Npts, velMS_rot, velEGF_rot, niter, pickt2, misfit_criteria, update_arrival);
+        [t2,done,stf,gfsv,dhatsv,datasv,tsv,t1sv,epsv,epldsv,tpldsv,t1,phasesv] = astf_calculation(velMS, velEGF, dt, sta, comp, phase, t, samps_before, samps_after, Npts, velMS_rot, velEGF_rot, niter, pickt2, misfit_criteria, update_arrival);
          
     else
         if mode_run.debug_plot

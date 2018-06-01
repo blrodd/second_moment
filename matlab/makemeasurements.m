@@ -1,5 +1,37 @@
-function [t2,DONE,STF,GFsv,dhatsv,datasv,Tsv,T1sv,epsv,epldsv,tpldsv,t0,t1,PhaseSv]=makemeasurements(velEGFa,velMSa,velEGFa_rot, velMSa_rot, npMS,npEGF,dtsva,stasm,compm,phasem, timems,timeegf, duration, niter, misfit_criteria, pickt2);
+function [t2,DONE,STF,GFsv,dhatsv,datasv,Tsv,T1sv,epsv,epldsv,tpldsv,t1,PhaseSv]=makemeasurements(velEGFa,velMSa,velEGFa_rot, velMSa_rot, npMS,npEGF,dtsva,stasm,compm,phasem, timems,timeegf, duration, niter, misfit_criteria, pickt2);
 ns=size(velEGFa,1);
+% ASTF MEASUREMENTS For all stations/channel waveform, calculate ASTF and determine best result per station
+% Inputs:
+%   velEGFa:            EGF velocity seismograms matrix
+%   velMSa:             MS velocity seismograms matrix
+%   velEGFa_rot:        rotated EGF velocity seismograms matrix for automated arrival picking
+%   velMSa_rot:         rotated MS velocity seismograms matrix for automated arrival picking
+%   npMS:               array of points in MS seismograms
+%   npEGF:              array of points in EGF seismograms
+%   dtsva:              sample frquency of data
+%   stasm:              array of stations
+%   compm:              array of components
+%   phasem:             array of phases
+%   timems:             array of MS arrival times relative to window start
+%   timeegf:            array of EGF arrival times relative to window start
+%   duration:           array of P-S time differences used to determine window length
+%   niter:              number of PLD iterations
+%   misfit_criteria:    maximum ASTF misfit threshold
+%   pickt2:             pick t2 or not
+% Outputs:
+%   t2:                 second moment of RSTF
+%   DONE:               0 or 1 to indicate if usable ASTF
+%   STF:                array of source time function (STF)
+%   GFsv:               EGF (windowed) data matrix
+%   dhatsv:             RSTF * EGF data matrix
+%   datasv:             MS (windowed) data matrix
+%   Tsv:                [T (duration pick) - T1 (arrival - 3 secs)] * dtsva matrix
+%   T1sv:               T1 (arrival - 3 secs) * dtsva matrix
+%   epsv:               array of misfit of T
+%   epldsv:             duration tradeoff matrix
+%   tpldsv:             misfit tradeoff matrix
+%   t1:                 array mean centroid times
+%   PhaseSv:            array of phases
 
 global mode_run
 % Will save the measurements in MEASUREMENTS.MAT
@@ -79,7 +111,7 @@ if ~mode_run.interactive
             %len = 3; 
             samps_before = 50;
             samps_after = len./dtsv(i);
-            [t2(i), DONE(i), STF(i,1:Npts),GFsv(i,1:Npts),dhatsv(i,1:Npts),datasv(i,1:Npts),Tsv(i),T1sv(i),epsv(i),EPLDsv,TPLDsv,t0(i),t1(i),PhaseSv(i),L_curve_ratio(i)] = astf_calculation(velMS, velEGF, dtsv(i), tms, tegf, stasm{i}, compm{i}, phasem(i), t, samps_before, samps_after, Npts, velMS_rot, velEGF_rot, niter, pickt2, misfit_criteria);
+            [t2(i), DONE(i), STF(i,1:Npts),GFsv(i,1:Npts),dhatsv(i,1:Npts),datasv(i,1:Npts),Tsv(i),T1sv(i),epsv(i),EPLDsv,TPLDsv,t1(i),PhaseSv(i),L_curve_ratio(i)] = astf_calculation(velMS, velEGF, dtsv(i), stasm{i}, compm{i}, phasem(i), t, samps_before, samps_after, Npts, velMS_rot, velEGF_rot, niter, pickt2, misfit_criteria);
             epldsv(i,1:length(EPLDsv))=EPLDsv;
             tpldsv(i,1:length(TPLDsv))=TPLDsv;
         end; %if
@@ -131,7 +163,7 @@ if ~mode_run.interactive
 
     good = find(DONE == 1);
 
-    logging.verbose(sprintf('Usable stations: %s', strjoin(strcat({stasm{good}}, '_', {compm{good}}))))
+    logging.info(sprintf('Usable stations: %s', strjoin(strcat({stasm{good}}, '_', {compm{good}}))))
 
 %                  %
 % INTERACTIVE MODE %

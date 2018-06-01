@@ -93,10 +93,10 @@ for index=1:EGFlen
     else
     % % call routine to make measurements
         logging.verbose(sprintf('Calculating ASTF measurements for MSorid %d / EGForid %d', msorid, orid))
-        [t2,DONE,STF,GFsv,dhatsv,datasv,T,T1sv,epsv,epld,tpld,t0,t1,PhaseSv] ...
+        [t2,DONE,STF,GFsv,dhatsv,datasv,T,T1sv,epsv,epld,tpld,t1,PhaseSv] ...
                         = makemeasurements(velEGF,velMS,velEGF_rot, velMS_rot, npMS,npEGF,dtsv,stasm, ...
                         compm, phasem, timems,timeegf, duration, NITER, misfit_criteria, PICKt2);
-        save measurements t2 DONE STF GFsv dhatsv datasv T T1sv epsv epld tpld t0 t1 PhaseSv
+        save measurements t2 DONE STF GFsv dhatsv datasv T T1sv epsv epld tpld t1 PhaseSv
     end
 
     IJ=find(DONE==1);  %index of what stations had succesful measurements
