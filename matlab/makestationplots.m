@@ -7,12 +7,10 @@ for ii=1:length(IJ)
     %STF=STFsv(IJ(i),:);
     dhat=dhatsv(i,:);
     npld=max(find(epld(i,:)>=.0001));
-    
+
     if mode_run.debug_plot
-        h = figure;
-    else
-        h = figure('visible', 'off');
-    end
+        figure;
+    end    
 
     dt=dtsv(i);
     subplot(2,2,1)
@@ -55,6 +53,7 @@ for ii=1:length(IJ)
     xlabel('Time (s)')
     hold off
     % consider a temp folder for any images that aren't final    
+
     if mode_run.debug_plot
         k = waitforbuttonpress;
         close
@@ -66,6 +65,7 @@ for ii=1:length(IJ)
     if ~mode_run.no_figure
         saveas(gcf, sprintf('%s/MS%d_EGF%d_%s_%s_ASTFresult.png', image_dir, msorid, orid, stasm{i}, compm{i}))
     end
+    close
 
 end
 

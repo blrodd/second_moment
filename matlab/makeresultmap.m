@@ -31,7 +31,6 @@ end
 % Figure out how to run now plot on figure
 if mode_run.debug_plot
     k = waitforbuttonpress;
-    close 
 else
     set(gcf, 'visible', 'off')
     set(gcf, 'pos', [10 10 900 500])
@@ -40,3 +39,4 @@ end
 if ~mode_run.no_figure
     saveas(gcf, sprintf('%s/MS%d_EGF%d_ASTFresult.png', image_dir, msorid, orid));
 end
+close 
