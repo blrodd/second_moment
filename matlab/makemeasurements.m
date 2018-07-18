@@ -120,7 +120,7 @@ if ~mode_run.interactive
     % Only use results of apparent duration in 1.5 standard deviation of mean. 
     gids = find(DONE == 1);
     ads = 2*sqrt(t2(gids));
-    inds = find(ads > (mean(ads) + 1.5 * std(ads)) | ads < (mean(ads) - 1.5 * std(ads)));
+    inds = find(ads > (mean(ads) + 1.0 * std(ads)) | ads < (mean(ads) - 1.0 * std(ads)));
     DONE(gids(inds)) = 0;
 
     % Flag ones with same station twice, and select the better result.
@@ -150,16 +150,19 @@ if ~mode_run.interactive
     good = find(DONE == 1);
     pfo_id = find(ismember({stasm{good}}, 'PFO')); 
     tpfo_id = find(ismember({stasm{good}}, 'TPFO'));
-    m_z = [epsv(good(pfo_id)) epsv(good(tpfo_id))];
-    app_z = normalize(2*sqrt(t2(good)), [pfo_id tpfo_id]);
-    l_z = normalize(L_curve_ratio(good), [pfo_id tpfo_id]);
-    tot_z = app_z.*m_z.*l_z;
-    [M, I] = max(tot_z); 
-    if I == 1
-        DONE(good(pfo_id)) = 0;
-    else
-        DONE(good(tpfo_id)) = 0;
-    end    
+    
+    if pfo_id & tpfo_id
+        m_z = [epsv(good(pfo_id)) epsv(good(tpfo_id))];
+        app_z = normalize(2*sqrt(t2(good)), [pfo_id tpfo_id]);
+        l_z = normalize(L_curve_ratio(good), [pfo_id tpfo_id]);
+        tot_z = app_z.*m_z.*l_z;
+        [M, I] = max(tot_z); 
+        if I == 1
+            DONE(good(pfo_id)) = 0;
+        else
+            DONE(good(tpfo_id)) = 0;
+        end
+    end 
 
     good = find(DONE == 1);
 
@@ -374,7 +377,7 @@ else
       % epld - duration tradeoff
  
       % finds 2nd moment of RSTF (t2) and mean centroid time (t1)
-      [t2(i),t1(i),t0(i)]=findt2(f,pickt2);
+      [t2(i),t1(i)]=findt2(f);
       dt=dtsv(i);
       t2(i)=t2(i)*dt*dt;
       STF(i,1:Npts)=f';
@@ -385,7 +388,6 @@ else
       npld=length(tpld);
       epldsv(i,1:npld)=epld(1:npld);
       tpldsv(i,1:npld)=tpld(1:npld);
-      
       %keyboard
  
       % plot the 4 graphs
@@ -409,10 +411,10 @@ else
       plot([1:length(STF(i,:))]*dt,STF(i,:)); hold on;
       xlabel('Time (s)')
       title(['ASTF, moment:',num2str(sum(STF(i,:)),5)]);
-      plot(t0(i)*dt,STF(round(t0(i))),'*')
+      plot(t1(i)*dt,STF(round(t1(i))),'*')
       ylim([0 1.05*max(STF(i,:))])
       text(.1,.8*max(STF(i,:)),['ApprDur:',num2str(2*sqrt(t2(i)),2),' s'])
-      xlim([0 2.1*t0(i)*dt]);
+      xlim([0 2.1*t1(i)*dt]);
       %xlim([0,3*T1sv(i)])
  
       % plot misfit     
@@ -420,7 +422,7 @@ else
       plot(tpld*dt,epld); hold on;
       xlabel('Time (s)');
       ylabel('Misfit');
-      xlim([0 3*t0(i)*dt])
+      xlim([0 3*t1(i)*dt])
       [junk,ind]=min(abs(tpld-T));
       plot(tpld(ind)*dt,epld(ind),'*')
       ylim([0 1])
@@ -436,6 +438,7 @@ else
       xlim([0 5]);
       xlabel('Time (s)')
       
+      l_curve_ratio(i) =(epld(npld) - epld(ind))/(tpld(npld) - tpld(ind)) * (tpld(ind) - tpld(1))/(epld(ind) - epld(1)); 
       % decide whether result is worth saving
       savei=menu('SAVE THIS RESULT','Yes P-wave','Yes S-wave', 'No REDO IT','No done');
       if(savei==1)
@@ -453,21 +456,70 @@ else
           DONE(i)=0;
           doi=0;
       end
-     elseif(ipick(i)==2)
-      doi=0;
-     end %ipick
+     
+    end %ipick
      
   end; %while
   
   %%%% at the end of each station, save progress
-  disp(['Done with ',stasm{i},' ',compm{i},' Saving to MEASUREMENTS.mat']);
-  save('MEASUREMENTS.mat','DONE','Npts','t2','t1','t0','datasv','dtsv','dhatsv','GFsv',...
+  logging.verbose(['Done with ',stasm{i},' ',compm{i},' Saving to MEASUREMENTS.mat']);
+  save('MEASUREMENTS.mat','DONE','Npts','t2','t1','datasv','dtsv','dhatsv','GFsv',...
       'STF','STF_sm','Tsv','T1sv','epsv','epldsv','tpldsv');
  
  end  % stations
-end
-disp('Done Making Measurements');
+    % Only use results of apparent duration in 1.5 standard deviation of mean. 
+    gids = find(DONE == 1);
+    ads = 2*sqrt(t2(gids));
+    inds = find(ads > (mean(ads) + 1.0 * std(ads)) | ads < (mean(ads) - 1.0 * std(ads)));
+    DONE(gids(inds)) = 0;
 
+    % Flag ones with same station twice, and select the better result.
+    good = find(DONE == 1);
+    [items, x] = unique({stasm{good}});
+    for i=1:length(items)
+        ids = find(ismember({stasm{good}}, items(i)));
+        if length(ids) > 1
+            % normalize apparent duration - mean appr. duration
+            % 0 (low deviation) - 1 (large deviation) 
+            app_z = normalize(2*sqrt(t2(good))-mean(2*sqrt(t2(good))), ids);
+            % normalized misfit
+            % 0 (low misfit) - 1 (large misfit)
+            m_z = transpose(normalize(epsv(good), ids));
+            % normalize l-curve sharpness 
+            % 0 (sharp) - 1 (not sharp)
+            l_z = normalize(l_curve_ratio(good), ids);
+            
+            % proxy for quality to compare channels
+            tot_z = app_z.*m_z.*l_z;
+            [M, I] = max(tot_z); 
+            DONE(good(ids(I))) = 0;
+        end 
+    end
+    
+    % choose between PFO and TPFO using criteria set above
+    good = find(DONE == 1);
+    pfo_id = find(ismember({stasm{good}}, 'PFO')); 
+    tpfo_id = find(ismember({stasm{good}}, 'TPFO'));
+    
+    if pfo_id & tpfo_id
+        m_z = [epsv(good(pfo_id)) epsv(good(tpfo_id))];
+        app_z = normalize(2*sqrt(t2(good)), [pfo_id tpfo_id]);
+        l_z = normalize(l_curve_ratio(good), [pfo_id tpfo_id]);
+        tot_z = app_z.*m_z.*l_z;
+        [M, I] = max(tot_z); 
+        if I == 1
+            DONE(good(pfo_id)) = 0;
+        else
+            DONE(good(tpfo_id)) = 0;
+        end
+    end 
+
+    good = find(DONE == 1);
+
+    logging.info(sprintf('Usable stations: %s', strjoin(strcat({stasm{good}}, '_', {compm{good}}))))
+
+end %interactive vs automated if statements
+logging.verbose('DONE MAKING ASTF MEASUREMENTS')
 
            %%% PHASE PICKER TO IMPROVE ARRIVAL TIMES %%%
     
