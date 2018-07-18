@@ -1,4 +1,4 @@
-	function[RSTF,dhat,T,eps,t,e]= pld(data,GF,T1,niter)
+function[RSTF,dhat,T,eps,t,e]= pld(data,GF,T1,niter)
 % DOES THE PLD inversion process for the RSTF from a data seismogram
 % and a GF seismogram.   The P or S-wave seismograms are expected to be 
 % alligned so that the P-wave arrival time occurs in the sample
@@ -82,19 +82,21 @@
     [M,I] = min(dist);
     T = t(I);
 
-    figure
-	plot(t,e)
-	ylabel('Epsilon')
-	xlabel('T')
-    hold on
-    scatter(t(I), e(I), 'filled', 'r')
-
-	axis([0 round(epsilon(end)*N) 0 1])
-        
     if mode_run.interactive
+        figure
+	    plot(t,e)
+	    ylabel('Epsilon')
+	    xlabel('T')
+        hold on
+        scatter(t(I), e(I), 'filled', 'r')
+
+	    axis([0 round(epsilon(end)*N) 0 1])
+        
         disp('Pick T')
         [x y] = ginput(1);
         T=round(x);
+        hold off
+        close
     end
 
 	% iterate over n
@@ -122,6 +124,4 @@
 	    sum2=sum2+(data(j))^2;
 	   end
 	   eps=sum1/sum2;
-     hold off
-     close
-     
+    

@@ -33,7 +33,6 @@ end
 EGF = Origin(db, orid);
 EGF = get_stations(EGF, select, reject);
 EGF = get_arrivals(EGF, select, reject);
-
 % Find station/phase arrivals on both MS and EGF data.
 % For each MS arrival, match to the corresponding EGF arrival.
 match = cellfun(@(x, y) find(strcmp({MS.arrivals.sta}, x) == 1 & strcmp({MS.arrivals.iphase}, y) == 1) ...
@@ -126,8 +125,5 @@ for i=1:ns
     end % if
 end % for loop
 end % function
-
-
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

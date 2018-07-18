@@ -156,7 +156,6 @@ classdef Origin
                 EQ.stations(i).pdelay = pdelay;
                 EQ.stations(i).sdelay = sdelay;
                 EQ.stations(i).pstime = pstime;
-                
             end
             
         end %function
@@ -178,7 +177,7 @@ classdef Origin
             % subset for MS orid
             string = sprintf('orid == %s', num2str(EQ.eqinfo.eorid));
             subset = dbsubset(table, string);
-            subset = dbsubset(subset, 'auth!="anza"');
+            % subset = dbsubset(subset, 'auth!="anza"');
             
             % grab MS arrival info
             [stas, chans, iphases, phases, times, deltimes, snrs, esazs, deltas] = dbgetv(subset, 'sta', 'chan', 'iphase', 'phase', 'time', 'deltim', 'snr', 'esaz', 'delta');
@@ -201,7 +200,8 @@ classdef Origin
                 EQ.arrivals(ma).predpstime = EQ.stations(ms).pstime;
             end
         end % function
-    
+   
+        % rewrite how it detects more than 1 arrival 
         function EQ=getPStime(EQ, sta)
             match = find(strcmp({EQ.arrivals.sta}, sta) == 1);
             match_to_sta = find(strcmp({EQ.stations.sta}, sta) == 1);

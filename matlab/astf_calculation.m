@@ -218,10 +218,10 @@ function [t2, done, stf,gfsv,dhatsv,datasv,tsv,t1sv,epsv,epldsv,tpldsv,t1,phases
             plot([1:length(stf(:))]*dt,stf(:)); hold on;
             xlabel('Time (s)')
             title(['ASTF, moment:',num2str(sum(stf(:)),5)]);
-            plot(t0*dt,stf(round(t0)),'*')
+            plot(t1*dt,stf(round(t1)),'*')
             ylim([0 1.05*max(stf(:))])
             text(.1,.8*max(stf(:)),['ApprDur:',num2str(2*sqrt(t2),2),' s'])
-            xlim([0 2.1*t0*dt]);
+            xlim([0 2.1*t1*dt]);
             %xlim([0,3*T1sv(i)])
 
             % plot misfit     
@@ -229,7 +229,7 @@ function [t2, done, stf,gfsv,dhatsv,datasv,tsv,t1sv,epsv,epldsv,tpldsv,t1,phases
             plot(tpld*dt,epld); hold on;
             xlabel('Time (s)');
             ylabel('Misfit');
-            xlim([0 3*t0*dt])
+            xlim([0 3*t1*dt])
             plot(tpld(ind)*dt,epld(ind),'*')
             ylim([0 1])
 

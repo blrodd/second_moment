@@ -61,6 +61,7 @@ classdef Data
             
                 % if data is not readable, return from function
                 try
+                    warning('off')
                     tr = trload_css(dbview, starttime, endtime);
                     %trsplice(tr)
                 catch
@@ -108,6 +109,7 @@ classdef Data
                 %  rotation -- discuss with Juan first???
                 try
                     warning('off')
+                    lastwarn('')
                     trrotate(tr, esaz, 0, {'T','R','Z'});
                     [warnMsg, warnId] = lastwarn;
                     if ~isempty(warnMsg)
