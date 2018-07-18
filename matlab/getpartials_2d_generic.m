@@ -57,9 +57,9 @@ for i=1:nmeas
  delta(i)=sqrt((x_sta(i)-(xe))^2 + (y_sta(i)-(ye))^2);
  depth=depe;
  phasi=' ';
- if(phas(i)=='P')
+ if(char(phas(i))=='P')
    V=Vp';
- elseif(phas(i)=='S')
+ elseif(char(phas(i))=='S')
    V=Vs';  
  else
    disp(['Problem with Phase for station',num2str(i)])

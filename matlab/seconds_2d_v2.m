@@ -1,4 +1,4 @@
-function	[xopt,L_c,W_c,vx,vy,tauc]=seconds_2d_v2(A,b);
+function	[xopt]=seconds_2d_v2(A,b);
 % To do the 2nd moments inverse problem using the robust control toolbox
 % INPUTS
 % Ax=b   linear system where x contains the second, moments in the order
@@ -85,20 +85,6 @@ disp('Finding Feasable Point')
 disp('Doing Objective Minimization')
 %minimize objective
 [copt,xopt]=mincx(lmisys,c,[.01,40,-100,10,0],xfeas);
-
-X=[xopt(4), xopt(5);
-   xopt(5),xopt(6);];
-[U,S,V]=svd(X);
-%disp('The Rupture Length and Width are ')
-L_c=2*sqrt(S(1,1));
-W_c=2*sqrt(S(2,2));
-
-%disp('The Centroid Rupture Velocity is (km/sec)')
-vx=xopt(2)/xopt(1);
-vy=xopt(3)/xopt(1);
-
-%disp('The Characteristic duration is (sec) ') 
-tauc=2*sqrt(xopt(1)); 
 
 
 
