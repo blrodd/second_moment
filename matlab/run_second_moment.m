@@ -45,6 +45,7 @@ MS = get_stations(MS, select, reject);
 MS = get_arrivals(MS, select, reject);
 % Set mainshock late, lone, depe for output.
 late = MS.eqinfo.elat; lone = MS.eqinfo.elon; depe = MS.eqinfo.edepth;
+mage = MS.eqinfo.mag;
 
 % Set strikes and dips for output.
 strike1 = MS.eqinfo.strike1; strike2 = MS.eqinfo.strike2;
@@ -127,71 +128,49 @@ for index=1:EGFlen
 
         % Get partials and do inversion for both possible fault planes. Select the one with smallest variance. 
         %[G, m2, strike, dip] = calc_second_moment(d, mlats,mlons,melevs,late,lone,depe,Vp,Vs,topl,phas,strike1,dip1,strike2,dip2);
-       
+     
         % original before testing both strikes 
         [G]=getpartials_2d_generic(mlats,mlons,melevs,late,lone,depe,Vp,Vs,topl,phas,strike1,dip1);
+        strike = strike1;
+        dip = dip1;
+
         % Finally do the inversion    
         m2=seconds_2d_v2(G,d');
         m2=m2(1:6);   % Ditch the dummy variable in the decision vector
-        % Calculate some random things
-        X=[m2(4), m2(5); m2(5), m2(6);];
-        ssqr=sum((G*m2-d').^2)./sum(d.^2);  %useful definitions of misfit
-        tauc=2*sqrt(m2(1)); 
+        ssqr=sum((G*m2-d').^2)./sum(d.^2);
+
+        % rupture duration    
+        tauc=2*sqrt(m2(1));
         tauc_resids=sum(abs(2*sqrt(G*m2)-2*sqrt(d')));
         tauc_resids_norm=tauc_resids/sum(2*sqrt(d'));
 
+        % u(2,0) - spatial extent of rupture
+        X=[m2(4), m2(5); m2(5), m2(6);];
+
         % Characteristic quantities
         [U,S,V]=svd(X);
-        % Eigenvectors
-        % use sort() 
-        %[max_evc_ind, r] = find(S == max(max(S)));
-        %max_evc = U(:,max_evc_ind);
-        %
-        %if(max_evc_ind == 1);
-        %    min_evc = U(:,2);
-        %else
-        %    min_evc = U(1,:);
-        %end
+        max_ev = max(max(S)); 
+        max_ev_ind = find(S == max_ev);
+        max_evc = U(:,max_ev_ind);
 
-        %angle = atan2(max_evc(2), max_evc(1));
-        %if angle < 0
-        %    angle = angle + 2*pi;
-        %end
-        %
-        %
-        %theta_grid = linspace(0, 2*pi);
-        %ellipse_x_r = L_c*cos(theta_grid);
-        %ellipse_y_r = W_c*sin(theta_grid);
-        %ellipse_x_deg = rad2deg(ellipse_x_r)
-        %ellipse_y_deg = rad2deg(ellipse_y_r)
-
-        %ellipse_x_az = deg2rad(Cart2AZ(ellipse_x_deg))
-        %ellipse_y_az = deg2rad(Cart2AZ(ellipse_y_deg))
-        %
-        %R = [cos(angle) sin(-angle); sin(angle) cos(angle)];
-        %r_ellipse = [ellipse_x_r;ellipse_y_r]' * R;
-        %figure;
-        %plot(r_ellipse(:,1), r_ellipse(:,2), '-')
-        %k=waitforbuttonpress
-        L_c=2*sqrt(max(max(S)));
-        W_c=2*sqrt(S(2,2));
-        v0=m2(2:3)/m2(1);
-        angle = atan2(v0(2), v0(1));
-        if angle < 0
-            angle = angle + 2*pi;
+        if(max_ev_ind == 1);
+            min_evc = U(:,2);
+        else
+            min_evc = U(1,:);
         end
+
+        L_c=2*sqrt(max_ev);
+        W_c=2*sqrt(S(2,2));
         
+        v0=m2(2:3)/m2(1);
         mv0=sqrt(sum(v0.^2));
-        tauc=2*sqrt(m2(1));
         L0=tauc*mv0;
-        %quiver(0, 0, m2(2), m2(3), L0)
         ratio=L0/L_c;
         ssqr3=sum((G*m2-d').^2)/sum((d'-mean(d)').^2);
         [m2', tauc,L_c,W_c,mv0,L0/L_c, ssqr3];
-        plotresultsfit
+       
         logging.info('Done with Inversion')
         logging.verbose(sprintf('tau_c %s (s), L_c %s (km), W_c %s (km), mv0 %s (km/s), L0/Lc %s', num2str(tauc,3), num2str(L_c,3), num2str(W_c,3), num2str(mv0,3), num2str(L0/L_c,3)));
-    end
   
 % testing for station errors, can use this as another way to remove stations 
     %for ii=1:length(IJ)
@@ -207,59 +186,61 @@ for index=1:EGFlen
     %    logging.info(sprintf('ii is %s L_c is %s', num2str(ii), num2str(L_c_0)))
     %end 
          
-    if DOJACKKNIFE   
-        clear mests L_cJK W_cJK vxJK vyJK taucJK
-        %if you only want the leave-one-out jacknife, this would suffice
-        %jackstat=jackknife(@seconds_2d_v2,G2,dd);     
-        %we want to delete all arrivals in a particular azimuth bin
-        %following McGuire, Zhao, Jordan, 2001 GJI.  
-        % get azimuths
-        clear dist az delta
-        ns=length(d);
-        for ii=1:ns
-          [dist(ii),az(ii),delta(ii)] = distaz(late,lone,mlats(ii),mlons(ii)); %lta,lna,ltb,lnb);
-        end
+        if DOJACKKNIFE   
+            clear mests L_cJK W_cJK vxJK vyJK taucJK
+            %if you only want the leave-one-out jacknife, this would suffice
+            %jackstat=jackknife(@seconds_2d_v2,G2,dd);     
+            %we want to delete all arrivals in a particular azimuth bin
+            %following McGuire, Zhao, Jordan, 2001 GJI.  
+            % get azimuths
+            clear dist az delta
+            ns=length(d);
+            for ii=1:ns
+              [dist(ii),az(ii),delta(ii)] = distaz(late,lone,mlats(ii),mlons(ii)); %lta,lna,ltb,lnb);
+            end
 
-        nband=360/azband;
-        for ii=1:nband
-           az1=(ii-1)*azband; az2=ii*azband;
-           IJ=find(az>=az1 & az<=az2);
-           Iuse=setdiff([1:ns],IJ);
-           G2ii=G(Iuse,:);   d2ii=d(Iuse);
-           m2dum=seconds_2d_v2(G2ii,d2ii');
-           mests(ii,1:6)=m2dum(1:6);
-        end       
-        % Get Cij
-        clear xcm1bar varjack
-        xcm1bar(1:6)=0;
-        for i=1:nband
-          xcm1bar(1:6)=xcm1bar(1:6)+mests(ii,1:6);
-        end
-        xcm1bar=xcm1bar/nband;
-        varjack=zeros(6,6);
-        for ii=1:nband
-          clear dum;
-          dum=mests(ii,1:6) - xcm1bar;
-          varjack=varjack+dum'*dum;
-        end
-        varjack=varjack/(nband-1);
-        %calculates errors on the derived quantities tauc, Lc Wc v0, mv0, L0/Lc
-        [sigmatc,sigmaLc,sigmaWc,sigratio,sigv01,sigv02,sigmamV0]=geterrors(m2,varjack);     
+            nband=360/azband;
+            for ii=1:nband
+               az1=(ii-1)*azband; az2=ii*azband;
+               IJK=find(az>=az1 & az<=az2);
+               Iuse=setdiff([1:ns],IJK);
+               G2ii=G(Iuse,:);   d2ii=d(Iuse);
+               m2dum=seconds_2d_v2(G2ii,d2ii');
+               mests(ii,1:6)=m2dum(1:6);
+            end       
+            % Get Cij
+            clear xcm1bar varjack
+            xcm1bar(1:6)=0;
+            for i=1:nband
+              xcm1bar(1:6)=xcm1bar(1:6)+mests(ii,1:6);
+            end
+            xcm1bar=xcm1bar/nband;
+            varjack=zeros(6,6);
+            for ii=1:nband
+              clear dum;
+              dum=mests(ii,1:6) - xcm1bar;
+              varjack=varjack+dum'*dum;
+            end
+            varjack=varjack/(nband-1);
+            %calculates errors on the derived quantities tauc, Lc Wc v0, mv0, L0/Lc
+            [sigmatc,sigmaLc,sigmaWc,sigratio,sigv01,sigv02,sigmamV0]=geterrors(m2,varjack);     
+                
+            logging.info('Done with Jackknifing')
             
-        logging.info('Done with Jackknifing')
-        
-        logging.verbose(sprintf('tauc %4.2f+-%3.3f  L_c %4.2f+-%3.2f  W_c %4.2f+-%3.2f  v0 [%4.2f, %4.2f]+-[%3.2f, %3.2f]  mv0  %4.2f+-%3.2f  ratio %4.2f+-%3.2f' ,...
-            tauc,sigmatc,L_c,sigmaLc,W_c,sigmaWc,v0(1),v0(2),sigv01,sigv02,mv0,sigmamV0,ratio,sigratio));
-    else
-        logging.info('DOJACKKNIFE set to 0: Change to 1 to run jackknife')
-    end   
- 
-    if DOBOOTSTRAP
-        [mv0u,mv0l,bound2u,bound2l,Lcu,Lcl,taucu,taucl,minvrsv,minvru,minvrl]=bootstrap2nds(G,d,bconf,NB);
-        logging.info('Done with Bootstrapping')
-        logging.verbose(sprintf('%s confidence limits for tauc (s) [%4.2f,%4.2f],  Lc (km) [%4.2f,%4.2f],  mv0 [%4.2f,%4.2f]',...
-             num2str(bconf), taucl,taucu,Lcl,Lcu,mv0l,mv0u));
-    else
-        logging.info('DOBOOTSTRAP set to 0: Change to 1 to run bootstrap')
+            logging.verbose(sprintf('tauc %4.2f+-%3.3f  L_c %4.2f+-%3.2f  W_c %4.2f+-%3.2f  v0 [%4.2f, %4.2f]+-[%3.2f, %3.2f]  mv0  %4.2f+-%3.2f  ratio %4.2f+-%3.2f' ,...
+                tauc,sigmatc,L_c,sigmaLc,W_c,sigmaWc,v0(1),v0(2),sigv01,sigv02,mv0,sigmamV0,ratio,sigratio));
+        else
+            logging.info('DOJACKKNIFE set to 0: Change to 1 to run jackknife')
+        end   
+        plotresults
+      
+        if DOBOOTSTRAP
+            [mv0u,mv0l,bound2u,bound2l,Lcu,Lcl,taucu,taucl,minvrsv,minvru,minvrl]=bootstrap2nds(G,d,bconf,NB);
+            logging.info('Done with Bootstrapping')
+            logging.verbose(sprintf('%s confidence limits for tauc (s) [%4.2f,%4.2f],  Lc (km) [%4.2f,%4.2f],  mv0 [%4.2f,%4.2f]',...
+                 num2str(bconf), taucl,taucu,Lcl,Lcu,mv0l,mv0u));
+        else
+            logging.info('DOBOOTSTRAP set to 0: Change to 1 to run bootstrap')
+        end
     end
 end
