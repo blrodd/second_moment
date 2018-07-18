@@ -8,10 +8,10 @@ for ii=1:length(IJ)
     dhat=dhatsv(i,:);
     npld=max(find(epld(i,:)>=.0001));
     
-    h = figure;
-
-    if ~mode_run.debug_plot
-        set(h, 'visible', 'off')
+    if mode_run.debug_plot
+        h = figure;
+    else
+        h = figure('visible', 'off');
     end
 
     dt=dtsv(i);
@@ -53,15 +53,18 @@ for ii=1:length(IJ)
     %xlim([0,length(data)*dt])
     xlim([0 4]);
     xlabel('Time (s)')
-
+    hold off
     % consider a temp folder for any images that aren't final    
-    if ~mode_run.no_figure
-        saveas(h, sprintf('%s/MS%d_EGF%d_%s_%s_ASTFresult.png', image_dir, msorid, orid, stasm{i}, compm{i}))
-    end
-
     if mode_run.debug_plot
         k = waitforbuttonpress;
         close
+    else
+        set(gcf, 'visible', 'off')
+        set(gcf, 'pos', [10 10 900 500])
+    end
+    
+    if ~mode_run.no_figure
+        saveas(gcf, sprintf('%s/MS%d_EGF%d_%s_%s_ASTFresult.png', image_dir, msorid, orid, stasm{i}, compm{i}))
     end
 
 end
