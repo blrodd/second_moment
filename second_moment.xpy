@@ -58,7 +58,7 @@ parser.add_option("--no_figure", action="store_true", dest="no_figure",
 parser.add_option("-w", action="store_true", dest="window",
         help="run on active display", default=False)
 
-parser.add_option("-e", "--egf", action="store", type="int", dest="egf",
+parser.add_option("-e", "--egf", action="store", type="string", dest="egf",
         help="egf orid", default=-99)
 
 parser.add_option("-p", action="store", type="string", dest="pf",
@@ -76,14 +76,18 @@ parser.add_option("-f", "--filter", action="store", type="string", dest="filter"
 parser.add_option("-t", "--time_window", action="store", type="string", dest="tw",
         help="time window", default=None)
 
+parser.add_option("-m", "--model", action="store", type="string", dest="vel_model",
+        help="velocity model", default=None)
+
 (options, args) = parser.parse_args()
 
 # parse parameter file
-pf = stock.pfread( options.pf )
 pf_file = stock.pffiles( options.pf )[0]
 
 if not os.path.isfile(pf_file):
     sys.exit( 'Cannot find parameter file [%s]' % options.pf )
+
+pf = stock.pfread( options.pf )
 
 # matlab inversion parameters
 loaddatafile = float(pf['loaddatafile'])
@@ -96,6 +100,7 @@ dobootstrap = float(pf['dobootstrap'])
 nb = float(pf['nb'])
 bconf = float(pf['bconf'])
 niter = float(pf['niter'])
+
 
 # set up folders
 image_dir = pf['image_dir']
@@ -130,6 +135,8 @@ if not options.filter:
 if not options.tw:
     options.tw = pf['time_window']
 
+if not options.vel_model:
+    options.vel_model = pf['velocity_model']
 
 # L-curve time duration maximum
 stf_duration_criteria = float(pf['misfit'])
@@ -192,12 +199,12 @@ if not options.window and xvfb_path:
 # Run Matlab code
 #
 cmd = "%s -r \"verbose='%s'; debug='%s'; debug_plot='%s'; interactive='%s'; no_figure='%s' \
-                ; image_dir='%s'; temp_dir='%s'; db='%s'; orid=%d; egf=%d; reject='%s'; select='%s'; filter='%s' \
+                ; image_dir='%s'; temp_dir='%s'; db='%s'; orid=%d; egf=%s; vel_model='%s'; reject='%s'; select='%s'; filter='%s' \
                 ; tw='%s'; misfit_criteria=%.2f; loc_margin=%.4f; dep_margin=%.2f \
                 ; time_margin=%.1f; LOADDATAFILE=%d; DOMEAS=%d; PICKt2=%d; DOINVERSION=%d; DOJACKKNIFE=%d \
-                ; AZBAND=%d; DOBOOTSTRAP=%d; NB=%d; BCONF=%.2f; NITER=%d; auto_arrival='%s'; \" < '%s'"  \
+                ; azband=%d; DOBOOTSTRAP=%d; NB=%d; bconf=%.2f; NITER=%d; auto_arrival='%s'; \" < '%s'"  \
                 % (matlab_path, options.verbose, options.debug, options.debug_plot, options.interactive \
-                , options.no_figure, image_dir, temp_dir, args[0], int(args[1]), options.egf, options.reject \
+                , options.no_figure, image_dir, temp_dir, args[0], int(args[1]), options.egf, options.vel_model, options.reject \
                 , options.select, options.filter, options.tw, stf_duration_criteria \
                 , loc_margin, dep_margin, time_margin, loaddatafile, domeas, pickt2, doinversion \
                 , dojackknife, azband, dobootstrap, nb, bconf, niter, auto_arrival, matlab_code)
@@ -222,10 +229,10 @@ def execute(command):
     output = process.communicate()[0]
     exitCode = process.returncode
 
-    if (exitCode == 0):
-        return output
-    else:
-        raise ProcessException(command, exitCode, output)
+    #if (exitCode == 0):
+    #    return output
+    #else:
+    #    raise subprocess.ProcessException(command, exitCode, output)
 
 try:
     mcmd = execute(cmd)
