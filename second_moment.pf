@@ -9,12 +9,13 @@ dobootstrap	1	# run bootstrapping
 nb		1000	# number of bootstrap iterations to run
 bconf		0.95	# confidence level to determine bootstrap bounds
 niter		100	# number of iterations in the PLD deconvultions; > 50 usually needed
-
+testfault	0	# 1 - run inversion on both fault plans and select best, 0 - use strike1/dip1
+	
 # turn on/off features
 auto_arrival	True
 
 # egf selection criteria
-location_margin	0.005
+location_margin	0.1
 depth_margin	10
 time_margin	604800
 
@@ -23,13 +24,19 @@ filter	BW 1 4 5 4
 time_window	200
 
 # velocity model
-velocity_model	zigone_model
+model_path &Tbl{
+	&{anf}/data/second_moment_models
+	~/second_moment_models/
+	./
+}
+	
+velocity_model	zigone_model.mat
+
 # ASTF selection criteria
 misfit	0.60
 
 # file location
 image_dir	./second_moment_images
-temp_dir	./.second_moment
 
 # How do we run the main Matlab framework...
 xvfb_path    /usr/X11/bin/Xvfb

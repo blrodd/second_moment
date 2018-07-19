@@ -30,7 +30,7 @@ if mode_run.verbose
     logging.verbose(sprintf('Getting origin information for orid %s', orid))
 end
 
-EGF = Origin(db, orid);
+EGF = Origin(db, orid, 'EGF', '');
 EGF = get_stations(EGF, select, reject);
 EGF = get_arrivals(EGF, select, reject);
 % Find station/phase arrivals on both MS and EGF data.
