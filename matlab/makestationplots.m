@@ -56,7 +56,6 @@ for ii=1:length(IJ)
 
     if mode_run.debug_plot
         k = waitforbuttonpress;
-        close
     else
         set(gcf, 'visible', 'off')
         set(gcf, 'pos', [10 10 900 500])

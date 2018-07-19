@@ -27,7 +27,7 @@ if DOJACKKNIFE
     variancestring = sprintf('Variance Reduction: %4.4f', ssqr);
     taucstring = sprintf('   Duration: %4.2f+-%3.3f (s)', tauc, sigmatc);
     lengthstring = sprintf('   Length: %4.2f+-%3.2f (km)', L_c, sigmaLc);
-    widthstring = sprintf('   Width: Width: %4.2f+-%3.2f (km)', W_c, sigmaWc);
+    widthstring = sprintf('   Width: %4.2f+-%3.2f (km)', W_c, sigmaWc);
     velocitystring = sprintf('   Velocity: %4.2f+-%3.2f (km/s)', mv0, sigmamV0);
     directivitystring = sprintf('Directivity Ratio: %4.2f+-%3.2f', ratio, sigratio);
 else
