@@ -1,6 +1,6 @@
 example/second_moment_images
-example/second_moment.pf
-example/toppinputs
+example/second_moment*
+example/topp*
 example/*MS*
 matlab/old_stuff
 old_stuff
