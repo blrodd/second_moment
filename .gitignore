@@ -1,18 +1,16 @@
 example/second_moment_images
-example/second_moment*
-example/topp*
 example/*MS*
 matlab/old_stuff
 old_stuff
 example_2
-dblocsat2.pf
 notes.txt
 test.m
 filename.m
 MEASUREMENTS.mat
-dbmoment_logs
 tmp
 *.pyc
 *.swo
 *.swp
+example/second_moment.pf
+example/toppinputs
 
