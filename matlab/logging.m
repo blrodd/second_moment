@@ -27,7 +27,8 @@ classdef logging
         function die(message)
             timestamp = string(datetime('now', 'Format', 'yyyy-MM-dd HH:mm:ss.SSS'));
             message = char(strcat(timestamp, ' second_moment[KILL]: ', message));
-            elog_die(message)    
+            elog_notify(message)
+            exit()    
         end
         
         function warning(message)
