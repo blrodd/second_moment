@@ -43,6 +43,6 @@ G = Gs{I};
 m2 = m2s{I};
 strike = strikes(I);
 dip = dips(I);
-
+logging.verbose(sprintf('TESTFAULT=1: %s/%s variance reduction is %s. %s/%s variance reduction is %s. Using %s/%s', strike1, dip1, ssqrs(1), strike2, dip2, ssqrs(2), strike, dip))  
 
 

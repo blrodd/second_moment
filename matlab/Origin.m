@@ -18,7 +18,7 @@ classdef Origin
     end
 
     methods
-        function EQ = Origin(db, orid)
+        function EQ = Origin(db, orid, type, fault)
             EQ.maindb = db;
             EQ.origin = dblookup_table(db, 'origin'); 
             
@@ -45,37 +45,38 @@ classdef Origin
             if dbnrecs(table) == 1
                 [etime,elat,elon,edepth,mag,eauth,eorid,eevid]=dbgetv(table, 'time', 'lat', 'lon', 'depth', 'magnitude', 'auth', 'orid', 'evid');
             end
-
+            
             % GET MOMENT TENSOR INFORMATION %
-            subset = dbsubset(EQ.origin, string);
-            mt_join = dbjoin(subset, EQ.mt);
-            if dbnrecs(mt_join) > 0
-                [estatus,emag,estrike1,estrike2,edip1,edip2]=dbgetv(mt_join, 'estatus', 'drmag', 'str1', 'str2', 'dip1', 'dip2');
-                if (estatus == 'Quality: 0') | (estatus == 'Quality: 1')
-                    mt_flag = 1;
-                    logging.verbose('MT Quality < 2: Do not use fault dimensions')
+            if strcmp(type, 'MS')
+                if fault
+                    fault = str2double(strsplit(fault, ','));
+                    strike1 = fault(1); dip1 = fault(2);
+                    strike2 = fault(3); dip2 = fault(4);
+                    estatus = 'Quality: NA';
                 else
-                    mt_flag = 0;
-                    logging.verbose('MT Quality >= 2: Use fault dimensions')
+                    subset = dbsubset(EQ.origin, string);
+                    mt_join = dbjoin(subset, EQ.mt);
+                    if dbnrecs(mt_join) > 0
+                        [estatus,emag,estrike1,estrike2,edip1,edip2]=dbgetv(mt_join, 'estatus', 'drmag', 'str1', 'str2', 'dip1', 'dip2');
+                        if (estatus == 'Quality: 0') | (estatus == 'Quality: 1')
+                            mt_flag = 1;
+                            logging.die('MT Quality < 2: Do not use fault plane. Either run dbmoment with Quality >=1 or use --fault flag.')
+                        else
+                            logging.verbose('MT Quality >= 2: Use fault plane.')
+                        end
+                    else
+                      logging.die('MT solution does not exist. No fault plane. Either run dbmoment with Quality >=1 or use --fault flag.')
+                    end
+                    
+                    % will change after example
+                    strike1 = estrike1; strike2 = estrike2;
+                    dip1 = edip1; dip2 = edip2;
+                    mag = emag;
                 end
+                EQ.eqinfo = struct('etime',etime, 'elat', elat, 'elon', elon, 'edepth', edepth, 'mag', mag, 'eauth', eauth, 'eorid', eorid, 'eevid', eevid, 'estatus',estatus, 'strike1', strike1, 'strike2', strike2, 'dip1', dip1, 'dip2', dip2);
             else
-              mt_flag = 1;
-              logging.warning('MT solution does not exist')
+                EQ.eqinfo = struct('etime',etime, 'elat', elat, 'elon', elon, 'edepth', edepth, 'mag', mag, 'eauth', eauth, 'eorid', eorid, 'eevid', eevid);
             end
-
-            % will change after example
-            if mt_flag == 1;
-                strike1 = 307; dip1 = 83;
-                strike2 = 216; dip2 = 82; % from moment tensor solution
-                mag = mag;
-                estatus = 'Quality: NA';
-            else
-                strike1 = estrike1; strike2 = estrike2;
-                dip1 = edip1; dip2 = edip2;
-                mag = emag;
-            end
-
-            EQ.eqinfo = struct('etime',etime, 'elat', elat, 'elon', elon, 'edepth', edepth, 'mag', mag, 'eauth', eauth, 'eorid', eorid, 'eevid', eevid, 'estatus',estatus, 'strike1', strike1, 'strike2', strike2, 'dip1', dip1, 'dip2', dip2);
         end %function
 
     

@@ -2,6 +2,10 @@
 
 """ Python wrapper for McGuire 2017 MATLAB second moment program """
 
+#
+# -- Import modules
+#
+
 import os
 import sys
 import signal
@@ -26,15 +30,60 @@ from optparse import OptionParser
 
 import antelope.stock as stock
 
-# Set path of matlab script
-code_sub_folder = 'matlab'
-matlab_code_folder = '/Users/rrodd/work/second_moment' + '/' + code_sub_folder
-sys.path.append( matlab_code_folder )
-matlab_code = matlab_code_folder + '/' + 'run_second_moment.m'
+#
+# -- Declare functions
+#
+
+def safe_pf_get(pf,field,defaultval=False):
+    '''
+    Safe method to extract values from parameter file
+    with a default value option.
+    '''
+    value = defaultval
+    if pf.has_key(field):
+        try:
+            value = pf.get(field,defaultval)
+        except Exception,e:
+            elog.die('Problems safe_pf_get(%s,%s)' % (field,e))
+            pass
+    if isinstance( value, (list, tuple)):
+        value = [x for x in value if x]
+    logging.debug( "pf.get(%s,%s) => %s" % (field,defaultval,value) )
+    return value 
+
+
+def get_model_pf( mfile, path=[]):
+    '''
+    EARTH VELOCITY MODEL FILE:
+    Need to verify if we have the listed velocity model.
+    The file has a PF format but is not placed on the
+    regular folder with the rest of the parameter files
+    from contrib. That requires a full search on several
+    paths that we get from a parameter in the dbmoment.pf
+    file.
+    '''
+    model = False
+
+    logging.debug('Get model: %s in %s' % (mfile, path) )
+
+    for d in path:
+        os.path.isfile(os.path.join(d, mfile))
+        if os.path.isfile(os.path.join(d, mfile)):
+            logging.debug('Look for model: %s' % os.path.join(d, mfile))
+            model = os.path.join(d, mfile)
+            break
+        else:
+            pass # Stop if we find one
+    
+    if not model:
+        logging.error('Missing [%s] in [%s]' % ( mfile, ', '.join(path) ) )
+
+    return model
 
 #
-# Get command-line arguments
+# -- Set command-line arguments
 #
+
 usage = "\n\tUsage:\n"
 usage += "\t\tsecond_moment -vdxw --nofig [-p parameter file] [-s select] [-r reject] [-f filter] [-t tw] database orid \n"
 
@@ -76,85 +125,23 @@ parser.add_option("-f", "--filter", action="store", type="string", dest="filter"
 parser.add_option("-t", "--time_window", action="store", type="string", dest="tw",
         help="time window", default=None)
 
-parser.add_option("-m", "--model", action="store", type="string", dest="vel_model",
-        help="velocity model", default=None)
+parser.add_option("-m", "--model", action="append", type="string", dest="model",
+        help="velocity model", default=[])
+
+parser.add_option("--fault", action="store", type="string", dest="fault",
+        help="strike1,dip1,strike2,dip2", default="")
 
 (options, args) = parser.parse_args()
 
-# parse parameter file
-pf_file = stock.pffiles( options.pf )[0]
-
-if not os.path.isfile(pf_file):
-    sys.exit( 'Cannot find parameter file [%s]' % options.pf )
-
-pf = stock.pfread( options.pf )
-
-# matlab inversion parameters
-loaddatafile = float(pf['loaddatafile'])
-domeas = float(pf['domeasurement'])
-pickt2 = float(pf['pickt2'])
-doinversion = float(pf['doinversion'])
-dojackknife = float(pf['dojackknife'])
-azband = float(pf['azband'])
-dobootstrap = float(pf['dobootstrap'])
-nb = float(pf['nb'])
-bconf = float(pf['bconf'])
-niter = float(pf['niter'])
-
-
-# set up folders
-image_dir = pf['image_dir']
-temp_dir = pf['temp_dir']
-
-# remove files in directory if it exists or create directory (add later)
-if not os.path.exists(temp_dir):
-    os.makedirs(temp_dir)
-
-# create image directory if it does exist
-if not os.path.exists(image_dir):
-    os.makedirs(image_dir)
-
-# matlab info
-matlab_path = pf['matlab_path']
-matlab_flags = pf['matlab_flags']
-xvfb_path = pf['xvfb_path']
-matlab_nofig = pf['matlab_nofig']
-
-# on/off for features
-auto_arrival = pf['auto_arrival']
-
-# egf selection criteria
-loc_margin = float(pf['location_margin'])
-dep_margin = float(pf['depth_margin'])
-time_margin = float(pf['time_margin'])
-
-# filter and time window
-if not options.filter:
-    options.filter = pf['filter']
-
-if not options.tw:
-    options.tw = pf['time_window']
-
-if not options.vel_model:
-    options.vel_model = pf['velocity_model']
-
-# L-curve time duration maximum
-stf_duration_criteria = float(pf['misfit'])
-
 #
-# Start of main script
+# -- Set log level
 #
 
-# Set log level
 loglevel = 'WARNING'
 if options.verbose:
     loglevel = 'INFO'
 if options.debug:
     loglevel = 'DEBUG'
-
-# All modules should use the same logging function. We have
-# a nice method defined in the logging_helper lib that helps
-# link the logging on all of the modules.
 
 try:
     from logging_helper import getLogger
@@ -164,6 +151,75 @@ except Exception,e:
 # New logger object and set loglevel
 logging = getLogger(loglevel=loglevel)
 logging.info('loglevel=%s' % loglevel)
+
+#
+# -- Parse parameter file
+#
+
+pf_file = stock.pffiles( options.pf )[-1]
+
+if not os.path.isfile(pf_file):
+    sys.exit( 'Cannot find parameter file [%s]' % options.pf )
+
+pf = stock.pfread( options.pf )
+
+# matlab inversion parameters
+loaddatafile = float(safe_pf_get(pf, 'loaddatafile'))
+domeas = float(safe_pf_get(pf, 'domeasurement'))
+pickt2 = float(safe_pf_get(pf, 'pickt2'))
+doinversion = float(safe_pf_get(pf, 'doinversion'))
+dojackknife = float(safe_pf_get(pf, 'dojackknife'))
+azband = float(safe_pf_get(pf, 'azband'))
+dobootstrap = float(safe_pf_get(pf, 'dobootstrap'))
+nb = float(safe_pf_get(pf, 'nb'))
+bconf = float(safe_pf_get(pf, 'bconf'))
+niter = float(safe_pf_get(pf, 'niter'))
+testfault = float(safe_pf_get(pf, 'testfault'))
+
+# set up folders
+image_dir = os.path.relpath(safe_pf_get(pf, 'image_dir', 'second_moment_images'))
+if not os.path.exists(image_dir):
+    os.makedirs(image_dir)
+
+# model path
+model_path = safe_pf_get(pf, 'model_path')
+if not options.model:
+    options.model = safe_pf_get(pf, 'velocity_model')
+
+model = get_model_pf(options.model, model_path)
+
+# on/off for features
+auto_arrival = safe_pf_get(pf, 'auto_arrival')
+
+# egf selection criteria
+loc_margin = float(safe_pf_get(pf, 'location_margin'))
+dep_margin = float(safe_pf_get(pf, 'depth_margin'))
+time_margin = float(safe_pf_get(pf, 'time_margin'))
+
+# filter and time window
+if not options.filter:
+    options.filter = safe_pf_get(pf, 'filter')
+
+if not options.tw:
+    options.tw = safe_pf_get(pf, 'time_window')
+
+# L-curve time duration maximum
+stf_duration_criteria = float(safe_pf_get(pf, 'misfit'))
+
+#
+# -- Set matlab info
+#
+
+matlab_path = safe_pf_get(pf, 'matlab_path')
+matlab_flags = safe_pf_get(pf, 'matlab_flags')
+xvfb_path = safe_pf_get(pf, 'xvfb_path')
+matlab_nofig = safe_pf_get(pf, 'matlab_nofig')
+
+# set path of matlab script
+code_sub_folder = 'matlab'
+matlab_code_folder = '/Users/rrodd/work/second_moment' + '/' + code_sub_folder
+sys.path.append( matlab_code_folder )
+matlab_code = matlab_code_folder + '/' + 'run_second_moment.m'
 
 logging.info( "Start: %s %s" % ( 'second_moment',  stock.strtime( stock.now() ) )  )
 logging.info( "Start: configuration parameter file %s" % options.pf  )
@@ -196,18 +252,19 @@ if not options.window and xvfb_path:
     logging.info( " - $DISPLAY => %s" % os.environ["DISPLAY"]  )
 
 #
-# Run Matlab code
+# -- Run Matlab code
 #
+
 cmd = "%s -r \"verbose='%s'; debug='%s'; debug_plot='%s'; interactive='%s'; no_figure='%s' \
-                ; image_dir='%s'; temp_dir='%s'; db='%s'; orid=%d; egf=%s; vel_model='%s'; reject='%s'; select='%s'; filter='%s' \
+                ; image_dir='%s'; db='%s'; orid=%d; egf=%s; vel_model='%s'; reject='%s'; select='%s'; filter='%s' \
                 ; tw='%s'; misfit_criteria=%.2f; loc_margin=%.4f; dep_margin=%.2f \
                 ; time_margin=%.1f; LOADDATAFILE=%d; DOMEAS=%d; PICKt2=%d; DOINVERSION=%d; DOJACKKNIFE=%d \
-                ; azband=%d; DOBOOTSTRAP=%d; NB=%d; bconf=%.2f; NITER=%d; auto_arrival='%s'; \" < '%s'"  \
+                ; azband=%d; DOBOOTSTRAP=%d; NB=%d; bconf=%.2f; NITER=%d; TESTFAULT=%d; auto_arrival='%s'; fault='%s'; \" < '%s'"  \
                 % (matlab_path, options.verbose, options.debug, options.debug_plot, options.interactive \
-                , options.no_figure, image_dir, temp_dir, args[0], int(args[1]), options.egf, options.vel_model, options.reject \
+                , options.no_figure, image_dir, args[0], int(args[1]), options.egf, model, options.reject \
                 , options.select, options.filter, options.tw, stf_duration_criteria \
                 , loc_margin, dep_margin, time_margin, loaddatafile, domeas, pickt2, doinversion \
-                , dojackknife, azband, dobootstrap, nb, bconf, niter, auto_arrival, matlab_code)
+                , dojackknife, azband, dobootstrap, nb, bconf, niter, testfault, auto_arrival, options.fault, matlab_code)
 
 logging.info( " - Run Matlab script:"  )
 logging.info( "   %s " % cmd  )
@@ -229,10 +286,10 @@ def execute(command):
     output = process.communicate()[0]
     exitCode = process.returncode
 
-    #if (exitCode == 0):
-    #    return output
-    #else:
-    #    raise subprocess.ProcessException(command, exitCode, output)
+    if (exitCode == 0):
+        return output
+    else:
+        raise subprocess.ProcessException(command, exitCode, output)
 
 try:
     mcmd = execute(cmd)
@@ -244,9 +301,7 @@ if options.verbose:
     logging.info( "Done: %s %s" % ( 'second_moment',  stock.strtime( stock.now() ) )  )
 
 
-#
-# Kill virtual display if needed
-#
+# -- Kill virtual display if needed -- #
 if not options.window:
     logging.info( "xvfb.kill: %s" % xvfb.terminate() )
 
@@ -260,4 +315,3 @@ def num(s, r=None):
             return float(s)
 
 
-    

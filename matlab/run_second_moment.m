@@ -20,6 +20,7 @@ run('/opt/antelope/5.8/setup.m')
 
 % Figure out how to generalize this
 % Add matlab files to MATLABPATH.
+% read environmental variable for ANF and append
 addpath(genpath('/Users/rrodd/work/second_moment/matlab'));
 
 % Modes to run data in (e.g. verbose, interactively, etc.)
@@ -40,7 +41,7 @@ end
 db = dbopen(db, 'r');
 
 % Initiate Origin class.
-MS = Origin(db, orid);
+MS = Origin(db, orid, 'MS', fault);
 MS = get_stations(MS, select, reject);
 MS = get_arrivals(MS, select, reject);
 % Set mainshock late, lone, depe for output.
@@ -65,7 +66,7 @@ end
 EGFlen = length(egforids);
 for index=1:EGFlen
     orid = egforids(index);
-    filename = sprintf('%s/MS%d_EGF%d_setup.mat', temp_dir, msorid, orid);
+    filename = sprintf('MS%d_EGF%d_setup.mat', msorid, orid);
 
     % Add a data file flag if want to use specific data file 
     if LOADDATAFILE
@@ -87,7 +88,7 @@ for index=1:EGFlen
     end
 
 % Parameters for the PLD measurements of ASTF duration.
-    measurements = sprintf('%s/MS%d_EGF%d_measurements.mat', temp_dir, msorid, orid);
+    measurements = sprintf('MS%d_EGF%d_measurements.mat', msorid, orid);
     if DOMEAS
     % % call routine to make measurements
         logging.verbose(sprintf('Calculating ASTF measurements for MSorid %d / EGForid %d', msorid, orid))
@@ -127,16 +128,22 @@ for index=1:EGFlen
         % Get partials
 
         % Get partials and do inversion for both possible fault planes. Select the one with smallest variance. 
-        %[G, m2, strike, dip] = calc_second_moment(d, mlats,mlons,melevs,late,lone,depe,Vp,Vs,topl,phas,strike1,dip1,strike2,dip2);
-     
-        % original before testing both strikes 
-        [G]=getpartials_2d_generic(mlats,mlons,melevs,late,lone,depe,Vp,Vs,topl,phas,strike1,dip1);
-        strike = strike1;
-        dip = dip1;
+        if TESTFAULT
+            % get partials, run inversion on both planes, and select best based on variance reduction
+            [G, m2, strike, dip] = calc_second_moment(d, mlats,mlons,melevs,late,lone,depe,Vp,Vs,topl,phas,strike1,dip1,strike2,dip2);
+        else
+            % get partials
+            logging.verbose(sprintf('TESTFAULT=0: Using %s/%s', strike1, dip1))
+            [G]=getpartials_2d_generic(mlats,mlons,melevs,late,lone,depe,Vp,Vs,topl,phas,strike1,dip1);
+            strike = strike1;
+            dip = dip1;
 
-        % Finally do the inversion    
-        m2=seconds_2d_v2(G,d');
-        m2=m2(1:6);   % Ditch the dummy variable in the decision vector
+            % do inversion    
+            m2=seconds_2d_v2(G,d');
+            m2=m2(1:6);   % Ditch the dummy variable in the decision vector
+        end
+
+        % variance reduction 
         ssqr=sum((G*m2-d').^2)./sum(d.^2);
 
         % rupture duration    
