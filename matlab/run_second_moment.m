@@ -12,7 +12,10 @@
 %   time_margin:  time (s) that egf time can vary from mainshock time
 %   vel_model:    velocity model
 % Outputs:
-% Usage:
+% To screen - Inversion, Jackknifing, and Bootstrapping if set to 1
+% To working directory - orid_egf_setup.mat, orid_egf_measurements.mat
+% To image directory - station astf plots, astf fit, final results
+% Usage: Runs from second_moment python wrapper
 % Exceptions:
 
 % Initiate Antelope-matlab interface.
@@ -21,7 +24,7 @@ run('/opt/antelope/5.8/setup.m')
 % Figure out how to generalize this
 % Add matlab files to MATLABPATH.
 % read environmental variable for ANF and append
-addpath(genpath('/Users/rrodd/work/second_moment/matlab'));
+addpath(genpath(matlab_code));
 
 % Modes to run data in (e.g. verbose, interactively, etc.)
 global mode_run;

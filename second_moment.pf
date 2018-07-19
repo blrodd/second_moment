@@ -25,8 +25,8 @@ time_window	200
 
 # velocity model
 model_path &Tbl{
-	&{anf}/data/second_moment_models
-	~/second_moment_models/
+	&{anf}/data/matlab/second_moment/
+	/Users/rrodd/work/second_moment/matlab/
 	./
 }
 	
@@ -39,6 +39,9 @@ misfit	0.60
 image_dir	./second_moment_images
 
 # How do we run the main Matlab framework...
+#matlab_code_path    &{anf}/data/matlab/second_moment/
+matlab_code_path    /Users/rrodd/work/second_moment/matlab
+
 xvfb_path    /usr/X11/bin/Xvfb
 matlab_path  /Applications/MATLAB_R2018a.app/bin/matlab
 matlab_flags -nodesktop -nosplash

@@ -206,6 +206,11 @@ if not options.tw:
 # L-curve time duration maximum
 stf_duration_criteria = float(safe_pf_get(pf, 'misfit'))
 
+# set path of matlab script
+matlab_code_path = safe_pf_get(pf, 'matlab_code_path')
+sys.path.append( matlab_code_path )
+matlab_code = matlab_code_path + '/' + 'run_second_moment.m'
+
 #
 # -- Set matlab info
 #
@@ -214,12 +219,6 @@ matlab_path = safe_pf_get(pf, 'matlab_path')
 matlab_flags = safe_pf_get(pf, 'matlab_flags')
 xvfb_path = safe_pf_get(pf, 'xvfb_path')
 matlab_nofig = safe_pf_get(pf, 'matlab_nofig')
-
-# set path of matlab script
-code_sub_folder = 'matlab'
-matlab_code_folder = '/Users/rrodd/work/second_moment' + '/' + code_sub_folder
-sys.path.append( matlab_code_folder )
-matlab_code = matlab_code_folder + '/' + 'run_second_moment.m'
 
 logging.info( "Start: %s %s" % ( 'second_moment',  stock.strtime( stock.now() ) )  )
 logging.info( "Start: configuration parameter file %s" % options.pf  )
@@ -255,12 +254,12 @@ if not options.window and xvfb_path:
 # -- Run Matlab code
 #
 
-cmd = "%s -r \"verbose='%s'; debug='%s'; debug_plot='%s'; interactive='%s'; no_figure='%s' \
+cmd = "%s -r \"matlab_code='%s'; verbose='%s'; debug='%s'; debug_plot='%s'; interactive='%s'; no_figure='%s' \
                 ; image_dir='%s'; db='%s'; orid=%d; egf=%s; vel_model='%s'; reject='%s'; select='%s'; filter='%s' \
                 ; tw='%s'; misfit_criteria=%.2f; loc_margin=%.4f; dep_margin=%.2f \
                 ; time_margin=%.1f; LOADDATAFILE=%d; DOMEAS=%d; PICKt2=%d; DOINVERSION=%d; DOJACKKNIFE=%d \
                 ; azband=%d; DOBOOTSTRAP=%d; NB=%d; bconf=%.2f; NITER=%d; TESTFAULT=%d; auto_arrival='%s'; fault='%s'; \" < '%s'"  \
-                % (matlab_path, options.verbose, options.debug, options.debug_plot, options.interactive \
+                % (matlab_path, matlab_code_path, options.verbose, options.debug, options.debug_plot, options.interactive \
                 , options.no_figure, image_dir, args[0], int(args[1]), options.egf, model, options.reject \
                 , options.select, options.filter, options.tw, stf_duration_criteria \
                 , loc_margin, dep_margin, time_margin, loaddatafile, domeas, pickt2, doinversion \

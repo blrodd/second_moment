@@ -1,13 +1,12 @@
-PF = test_matlab.pf
+BIN = second_moment
 
-MAN1=
+PF = second_moment.pf
 
-BIN = test_matlab
+MAN1 = second_moment.1
 
-DATADIR = matlab/test_matlab
+DATADIR = python/second_moment
 
-DATA = test_matlab_lib.m
-
-CLEAN =
+DATA = __init__.py \
+	logging_helper.py
 
 include $(ANFMAKE)
