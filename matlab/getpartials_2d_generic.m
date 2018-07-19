@@ -74,7 +74,7 @@ for i=1:nmeas
     % FOR LINUX THE FOLLOWING IS FINE TO RUN FORTRAN CODES
     %unix('topp')
     % FOR MAC YOU NEED THE SETENV lines up above and 
-    [status, result] = system(['export DYLD_LIBRARY_PATH="": ' '/Users/rrodd/bin/second_moment/src/topp/topp']);
+    [status, result] = system(['export DYLD_LIBRARY_PATH="": ' '/Users/rrodd/work/second_moment/matlab/bin/topp']);
     % to run the program topp because of a disagreement between gfortran
     % and matlab about where stdout is,....
     %keyboard
