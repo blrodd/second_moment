@@ -9,4 +9,10 @@ DATADIR = python/second_moment
 DATA = __init__.py \
 	logging_helper.py
 
+EXAMPLEDIR = second_moment
+
+EXAMPLE = EXAMPLE_1 
+
 include $(ANFMAKE)
+
+#DIRS = matlab 

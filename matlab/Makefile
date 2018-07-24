@@ -33,7 +33,8 @@ DATA = Cart2AZ.m \
        polyconic.m \
        bootstrap2nds.m \
        logging.m \
-       posproj.m
-
+       posproj.m \
+       bin \
+       topp \
 
 include $(ANFMAKE)
