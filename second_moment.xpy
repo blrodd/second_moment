@@ -1,4 +1,3 @@
-#!/opt/antelope/5.8/bin/python
 
 """ Python wrapper for McGuire 2017 MATLAB second moment program """
 
@@ -6,17 +5,15 @@
 # -- Import modules
 #
 
-import os
-import sys
-import signal
+#import os
+#import sys
+#import signal
+#
+#signal.signal(signal.SIGINT, signal.SIG_DFL)
+#sys.path.append(os.environ['ANTELOPE'] + "/data/python")
+#sys.path.append(os.environ['ANTELOPE'] + "/contrib/data/python")
 
-signal.signal(signal.SIGINT, signal.SIG_DFL)
-sys.path.append(os.environ['ANTELOPE'] + "/data/python")
-sys.path.append(os.environ['ANTELOPE'] + "/contrib/data/python")
-
-import os
 import re
-import sys
 import glob
 import stat
 import json
@@ -53,21 +50,11 @@ def safe_pf_get(pf,field,defaultval=False):
 
 
 def get_model_pf( mfile, path=[]):
-    '''
-    EARTH VELOCITY MODEL FILE:
-    Need to verify if we have the listed velocity model.
-    The file has a PF format but is not placed on the
-    regular folder with the rest of the parameter files
-    from contrib. That requires a full search on several
-    paths that we get from a parameter in the dbmoment.pf
-    file.
-    '''
     model = False
 
     logging.debug('Get model: %s in %s' % (mfile, path) )
 
     for d in path:
-        os.path.isfile(os.path.join(d, mfile))
         if os.path.isfile(os.path.join(d, mfile)):
             logging.debug('Look for model: %s' % os.path.join(d, mfile))
             model = os.path.join(d, mfile)
@@ -144,7 +131,7 @@ if options.debug:
     loglevel = 'DEBUG'
 
 try:
-    from logging_helper import getLogger
+    from second_moment.logging_helper import getLogger
 except Exception,e:
     sys.exit('Problems loading logging lib. %s' % e)
 
@@ -166,7 +153,6 @@ pf = stock.pfread( options.pf )
 # matlab inversion parameters
 loaddatafile = float(safe_pf_get(pf, 'loaddatafile'))
 domeas = float(safe_pf_get(pf, 'domeasurement'))
-pickt2 = float(safe_pf_get(pf, 'pickt2'))
 doinversion = float(safe_pf_get(pf, 'doinversion'))
 dojackknife = float(safe_pf_get(pf, 'dojackknife'))
 azband = float(safe_pf_get(pf, 'azband'))
@@ -180,6 +166,10 @@ testfault = float(safe_pf_get(pf, 'testfault'))
 image_dir = os.path.relpath(safe_pf_get(pf, 'image_dir', 'second_moment_images'))
 if not os.path.exists(image_dir):
     os.makedirs(image_dir)
+
+temp_dir = os.path.relpath(safe_pf_get(pf, 'temp_dir', '.second_moment'))
+if not os.path.exists(temp_dir):
+    os.makedirs(temp_dir)
 
 # model path
 model_path = safe_pf_get(pf, 'model_path')
@@ -204,7 +194,7 @@ if not options.tw:
     options.tw = safe_pf_get(pf, 'time_window')
 
 # L-curve time duration maximum
-stf_duration_criteria = float(safe_pf_get(pf, 'misfit'))
+stf_duration_criteria = float(safe_pf_get(pf, 'misfit_criteria'))
 
 # set path of matlab script
 matlab_code_path = safe_pf_get(pf, 'matlab_code_path')
@@ -255,14 +245,14 @@ if not options.window and xvfb_path:
 #
 
 cmd = "%s -r \"matlab_code='%s'; verbose='%s'; debug='%s'; debug_plot='%s'; interactive='%s'; no_figure='%s' \
-                ; image_dir='%s'; db='%s'; orid=%d; egf=%s; vel_model='%s'; reject='%s'; select='%s'; filter='%s' \
+                ; image_dir='%s'; temp_dir='%s'; db='%s'; orid=%d; egf=%s; vel_model='%s'; reject='%s'; select='%s'; filter='%s' \
                 ; tw='%s'; misfit_criteria=%.2f; loc_margin=%.4f; dep_margin=%.2f \
-                ; time_margin=%.1f; LOADDATAFILE=%d; DOMEAS=%d; PICKt2=%d; DOINVERSION=%d; DOJACKKNIFE=%d \
+                ; time_margin=%.1f; LOADDATAFILE=%d; DOMEAS=%d; DOINVERSION=%d; DOJACKKNIFE=%d \
                 ; azband=%d; DOBOOTSTRAP=%d; NB=%d; bconf=%.2f; NITER=%d; TESTFAULT=%d; auto_arrival='%s'; fault='%s'; \" < '%s'"  \
                 % (matlab_path, matlab_code_path, options.verbose, options.debug, options.debug_plot, options.interactive \
-                , options.no_figure, image_dir, args[0], int(args[1]), options.egf, model, options.reject \
+                , options.no_figure, image_dir, temp_dir, args[0], int(args[1]), options.egf, model, options.reject \
                 , options.select, options.filter, options.tw, stf_duration_criteria \
-                , loc_margin, dep_margin, time_margin, loaddatafile, domeas, pickt2, doinversion \
+                , loc_margin, dep_margin, time_margin, loaddatafile, domeas, doinversion \
                 , dojackknife, azband, dobootstrap, nb, bconf, niter, testfault, auto_arrival, options.fault, matlab_code)
 
 logging.info( " - Run Matlab script:"  )
