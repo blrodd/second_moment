@@ -1,4 +1,4 @@
-function [G,m2, strike, dip] = calc_second_moment(d, mlats, mlons, melevs, late, lone, depe, Vp, Vs, topl, phas, strike1, dip1, strike2, dip2);
+function [G,m2, strike, dip] = calc_second_moment(d, mlats, mlons, melevs, late, lone, depe, Vp, Vs, topl, phas, strike1, dip1, strike2, dip2,matlab_code, temp_dir);
 % CALC_SECOND_MOMENT For each fault plane, get partials and run inversion. Return best result.
 % Inputs:
 %   d       list of time durations; G*m2 =d
@@ -29,7 +29,7 @@ Gs = cell(n, 1);
 m2s = cell(n, 1);
 ssqrs = [];
 for i=1:n
-    Gs{i}=getpartials_2d_generic(mlats,mlons,melevs,late,lone,depe,Vp,Vs,topl,phas,strikes(i),dips(i));
+    Gs{i}=getpartials_2d_generic(mlats,mlons,melevs,late,lone,depe,Vp,Vs,topl,phas,strikes(i),dips(i),matlab_code, temp_dir);
         
     % Finally do the inversion    
     m = seconds_2d_v2(Gs{i},d');
