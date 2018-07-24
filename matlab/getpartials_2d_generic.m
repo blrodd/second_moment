@@ -1,4 +1,4 @@
-function  [G,toa] = getpartials_2d_generic(mlats,mlons,melevs,late,lone,depe,Vp,Vs,topl,phas,strike,dip);
+function  [G,toa] = getpartials_2d_generic(mlats,mlons,melevs,late,lone,depe,Vp,Vs,topl,phas,strike,dip,matlab_code, temp_dir);
 %
 %   Calculates the G matrix for the second moments inversion for a known 2D fault
 %   Gm=d  where m is the six independent second moments [tt, xt, yt, xx,xy, yy];
@@ -21,6 +21,7 @@ function  [G,toa] = getpartials_2d_generic(mlats,mlons,melevs,late,lone,depe,Vp,
 %
 %   See McGuire, 2004, BSSA for details
 % no checks of input yet
+logging.verbose(sprintf('Running topp to get partials'))
 setenv('GFORTRAN_STDIN_UNIT', '5') 
 setenv('GFORTRAN_STDOUT_UNIT', '6') 
 setenv('GFORTRAN_STDERR_UNIT', '0')
@@ -69,16 +70,17 @@ for i=1:nmeas
  ddum=delta(i);
  %ddum
  %make input for raytrace code	and run and readin outputs
-	save -ascii toppinputs ddum depth NL V topl
+    save('toppinputs', 'ddum', 'depth', 'NL', 'V', 'topl', '-ascii')
     %keyboard
     % FOR LINUX THE FOLLOWING IS FINE TO RUN FORTRAN CODES
-    %unix('topp')
+    logging.verbose(sprintf('Running topp to get raytrace for station %0.2f degrees from event', az(i)))
+    cmd = sprintf('export DYLD_LIBRARY_PATH=""; %s/bin/topp', matlab_code);
+    unix(cmd);
     % FOR MAC YOU NEED THE SETENV lines up above and 
-    [status, result] = system(['export DYLD_LIBRARY_PATH="": ' '/Users/rrodd/work/second_moment/matlab/bin/topp']);
+    %[status, result] = system(['export DYLD_LIBRARY_PATH="";' '%s', cmd)]);
     % to run the program topp because of a disagreement between gfortran
     % and matlab about where stdout is,....
     %keyboard
-    
 	fid=fopen('toppoutputs');
 	tt(i)=fscanf(fid,'%g',1);
 	toa(i)=fscanf(fid,'%g',1);
@@ -133,8 +135,12 @@ for i=1:nmeas
         partials(i,5)=s(1)*s(3); %Along-Strike --  DownDip
         partials(i,6)=s(3)*s(3); %Downdip -- Downdip
 end
-
- 
 G=partials;
+
+topout = sprintf('%s/toppoutputs', temp_dir)
+topin = sprintf('%s/toppinputs', temp_dir)
+unix(sprintf('mv toppoutputs %s', topout))
+unix(sprintf('mv toppinputs %s', topin))
+ 
 %keyboard
 end
