@@ -1,4 +1,4 @@
-function [t2, done, stf,gfsv,dhatsv,datasv,tsv,t1sv,epsv,epldsv,tpldsv,t1,phasesv,l_curve_ratio] = astf_calculation(velMS, velEGF, dt, sta, comp, phase, t, samps_before, samps_after, Npts, velMS_rot, velEGF_rot, niter, pickt2, misfit_criteria, update_arrival)
+function [t2, done, stf,gfsv,dhatsv,datasv,tsv,t1sv,epsv,epldsv,tpldsv,t1,phasesv,l_curve_ratio] = astf_calculation(velMS, velEGF, dt, sta, comp, phase, t, samps_before, samps_after, Npts, velMS_rot, velEGF_rot, niter, misfit_criteria, update_arrival)
 % ASTF CALCULATION for a given station
 % Inputs:
 %   velEGF:             EGF velocity seismogram
@@ -16,7 +16,6 @@ function [t2, done, stf,gfsv,dhatsv,datasv,tsv,t1sv,epsv,epldsv,tpldsv,t1,phases
 %   samps_after:        samples after arrival time
 %   Npts:               number of points in seismogram 
 %   niter:              number of PLD iterations
-%   pickt2:             pick t2 or not
 %   misfit_criteria:    maximum ASTF misfit threshold
 %   update_arrival:     flag to turn on/off automated arrival detection
 % Outputs:
@@ -36,11 +35,11 @@ function [t2, done, stf,gfsv,dhatsv,datasv,tsv,t1sv,epsv,epldsv,tpldsv,t1,phases
 
     global mode_run
     % set defaults for optional parameters
-    if nargin < 15
+    if nargin < 14
         logging.die('Not enough input arguments in astf_calculation')
-    elseif nargin == 15
+    elseif nargin == 14
         update_arrival = 0;
-    elseif nargin > 16
+    elseif nargin > 15
         logging.die('Too many input arguments in astf_calculation')
     end  
 
@@ -193,7 +192,7 @@ function [t2, done, stf,gfsv,dhatsv,datasv,tsv,t1sv,epsv,epldsv,tpldsv,t1,phases
     if epld(ind) > misfit_criteria && ~update_arrival && mode_run.auto_arrival
         logging.verbose(sprintf('Misfit %0.2f > Criteria %0.2f: Attempting to detect arrival to improve result', epld(ind), misfit_criteria)) 
         update_arrival = 1;
-        [t2,done,stf,gfsv,dhatsv,datasv,tsv,t1sv,epsv,epldsv,tpldsv,t1,phasesv] = astf_calculation(velMS, velEGF, dt, sta, comp, phase, t, samps_before, samps_after, Npts, velMS_rot, velEGF_rot, niter, pickt2, misfit_criteria, update_arrival);
+        [t2,done,stf,gfsv,dhatsv,datasv,tsv,t1sv,epsv,epldsv,tpldsv,t1,phasesv] = astf_calculation(velMS, velEGF, dt, sta, comp, phase, t, samps_before, samps_after, Npts, velMS_rot, velEGF_rot, niter, misfit_criteria, update_arrival);
          
     else
         if mode_run.debug_plot

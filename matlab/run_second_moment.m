@@ -73,7 +73,7 @@ for index=1:EGFlen
 
     % Add a data file flag if want to use specific data file 
     if LOADDATAFILE
-        logging.verbose(sprintf('Load  waveforms from %s', filename))
+        logging.verbose(sprintf('Loading  waveforms from %s', filename))
 
         try
             load(filename)
@@ -97,7 +97,7 @@ for index=1:EGFlen
         logging.verbose(sprintf('Calculating ASTF measurements for MSorid %d / EGForid %d', msorid, orid))
         [t2,DONE,STF,GFsv,dhatsv,datasv,T,T1sv,epsv,epld,tpld,t1,PhaseSv] ...
                         = makemeasurements(velEGF,velMS,velEGF_rot, velMS_rot, npMS,npEGF,dtsv,stasm, ...
-                        compm, phasem, timems,timeegf, duration, NITER, misfit_criteria, PICKt2);
+                        compm, phasem, timems,timeegf, duration, NITER, misfit_criteria);
         save(measurements, 't2', 'DONE', 'STF', 'GFsv', 'dhatsv', 'datasv', 'T', 'T1sv', 'epsv', 'epld', 'tpld', 't1', 'PhaseSv')
     else
         logging.verbose(sprintf('Loading ASTF measurements from %s', measurements))
@@ -126,18 +126,20 @@ for index=1:EGFlen
 
         % Define velocity model for partial calculation
         load(vel_model);
-        Vs=Vp/1.73;
+        if ~exist('Vs')
+            Vs=Vp/1.73;
+        end
         
         % Get partials
 
         % Get partials and do inversion for both possible fault planes. Select the one with smallest variance. 
         if TESTFAULT
             % get partials, run inversion on both planes, and select best based on variance reduction
-            [G, m2, strike, dip] = calc_second_moment(d, mlats,mlons,melevs,late,lone,depe,Vp,Vs,topl,phas,strike1,dip1,strike2,dip2);
+            [G, m2, strike, dip] = calc_second_moment(d, mlats,mlons,melevs,late,lone,depe,Vp,Vs,topl,phas,strike1,dip1,strike2,dip2,matlab_code, temp_dir);
         else
             % get partials
-            logging.verbose(sprintf('TESTFAULT=0: Using %s/%s', strike1, dip1))
-            [G]=getpartials_2d_generic(mlats,mlons,melevs,late,lone,depe,Vp,Vs,topl,phas,strike1,dip1);
+            logging.verbose(sprintf('TESTFAULT=0: Using fault plane %d/%d', strike1, dip1))
+            [G]=getpartials_2d_generic(mlats,mlons,melevs,late,lone,depe,Vp,Vs,topl,phas,strike1,dip1,matlab_code, temp_dir);
             strike = strike1;
             dip = dip1;
 
