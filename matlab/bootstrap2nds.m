@@ -47,16 +47,16 @@ taucl=taucsv(indl); taucu=taucsv(indu);
 bound2l=bound2sv(indl); bound2u=bound2sv(indu);
 minvrl=minvrsv(indl); minvru=minvrsv(indu);
 
-figure
-subplot(1,2,1)
-hist(Lcsv,50);
-xlabel('L_c (km)','FontSize',12);
-set(gca,'FontSize',12)
-ylabel('#');
-subplot(1,2,2)
-hist(taucsv,50)
-xlabel('\tau_c (s)','FontSize',12)
-ylabel('#');
-set(gca,'FontSize',12);
+%figure
+%subplot(1,2,1)
+%hist(Lcsv,50);
+%xlabel('L_c (km)','FontSize',12);
+%set(gca,'FontSize',12)
+%ylabel('#');
+%subplot(1,2,2)
+%hist(taucsv,50)
+%xlabel('\tau_c (s)','FontSize',12)
+%ylabel('#');
+%set(gca,'FontSize',12);
 
 end
