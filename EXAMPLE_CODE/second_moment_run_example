@@ -18,7 +18,7 @@ use File::Path;
 # SIMPLE SCRIPT TO RUN DEMO CODE FOR SECOND_MOMENT
 #
 
-$path = "$ENV{anf}/example/second_moment";
+$path = "$ENV{ANF}/example/second_moment";
 $need_link = 0;
 
 print "\nRUN SECOND_MOMENT DEMO\n";
@@ -40,7 +40,7 @@ if ( scalar @ARGV ) {
 
 
 # TEST FOR EXAMPLE DIRECTORY
-die "\nNO DIRECTORY FOR EXAMPLE: [$path]\n"  unless -d $path;
+#die "\nNO DIRECTORY FOR EXAMPLE: [$path]\n"  unless -d $path;
 
 
 # GO TO DIR
@@ -58,10 +58,10 @@ foreach ( "path/.second_moment", "$path/second_moment_images") {
 
 
 # RUN EXAMPLES
-foreach ( 1, 2) {
+foreach (1) {
     print "\nSTART EXAMPLE $_\n";
-    print "\nsecond_moment -v --fault "307,83,217,82" EXAMPLE_$_/example_$_ 1\n";
-    $return_value = system( "second_moment -v --fault "307,83,217,82" EXAMPLE_$_/example_$_ 1" );
+    print "\nsecond_moment -v --fault '307,83,217,82' EXAMPLE_$_/example_$_ 1\n";
+    $return_value = system( "second_moment -v --fault '307,83,217,82' EXAMPLE_$_/example_$_ 1" );
 
     print "\nDONE WITH EXAMPLE $_\n";
 }
