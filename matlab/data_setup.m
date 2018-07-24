@@ -98,7 +98,7 @@ for i=1:ns
     
         % If data exists, store arrivals, station, phase, comp, etc. 
         if ~isempty(MS_wf.data) & ~isempty(EGF_wf.data)
-            s = s + 1; 
+            s = s + 1;
             
             stasm{s} = sta;
             sid = find(strcmp({MS.stations.sta}, sta) == 1); 
@@ -124,6 +124,12 @@ for i=1:ns
         end % if
     end % if
 end % for loop
+
+% if no waveform data, kill second_moment
+if ~exist('dtsv')
+    logging.die('No waveforms were found for all possible stations')
+end
+
 end % function
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

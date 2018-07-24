@@ -73,6 +73,23 @@ classdef Origin
                     dip1 = edip1; dip2 = edip2;
                     mag = emag;
                 end
+                
+                if strike1 < 0 | strike1 > 360
+                    logging.die(sprintf('Strike-%d not > 0 and < 360. Check --fault input or mt table.', strike1))
+                end
+
+                if strike2 < 0 | strike2 > 360
+                    logging.die(sprintf('Strike-%d not > 0 and < 360. Check --fault input or mt table.', strike2))
+                end
+
+                if dip1 < -90 | dip1 > 90
+                    logging.die(sprintf('Dip-%d not > -90 and < 90. Check --fault input or mt table.', dip1))
+                end 
+
+                if dip2 < -90 | dip2 > 90
+                    logging.die(sprintf('Dip-%d not > -90 and < 90. Check --fault input or mt table.', dip2))
+                end 
+                
                 EQ.eqinfo = struct('etime',etime, 'elat', elat, 'elon', elon, 'edepth', edepth, 'mag', mag, 'eauth', eauth, 'eorid', eorid, 'eevid', eevid, 'estatus',estatus, 'strike1', strike1, 'strike2', strike2, 'dip1', dip1, 'dip2', dip2);
             else
                 EQ.eqinfo = struct('etime',etime, 'elat', elat, 'elon', elon, 'edepth', edepth, 'mag', mag, 'eauth', eauth, 'eorid', eorid, 'eevid', eevid);
