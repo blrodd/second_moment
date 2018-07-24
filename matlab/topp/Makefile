@@ -67,3 +67,4 @@ rpad_.o		: $(INCLDIR)/f77types.h
 sscanf3_.o	: $(INCLDIR)/compat.h
 sscanf3_.o	: $(INCLDIR)/f77types.h
 
+
