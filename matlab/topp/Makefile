@@ -25,6 +25,7 @@ all: $(CMD)
 
 $(CMD): $(OBJS)
 	$(FC) $(LDFLAGS) $(OBJS) $(LIBS) -o $@
+	cp topp ../bin/
 
 %.o: %.f
 	$(FC) $(FFLAGS) -c $(@F:.o=.f) -o $@
